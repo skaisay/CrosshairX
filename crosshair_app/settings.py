@@ -2206,10 +2206,10 @@ class SettingsPanel(QWidget):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CrosshairX/1.0",
         }
         try:
-            # 1. Search user
+            # 1. Search user (Roblox API requires limit >= 10)
             url = (
                 f"https://users.roblox.com/v1/users/search"
-                f"?keyword={urllib.parse.quote(username)}&limit=1"
+                f"?keyword={urllib.parse.quote(username)}&limit=10"
             )
             req = urllib.request.Request(url, headers=_hdrs)
             with urllib.request.urlopen(req, timeout=10) as resp:
