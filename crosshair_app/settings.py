@@ -133,12 +133,12 @@ def _enable_acrylic(hwnd, tint=0x14000000):
         pass
 
 
-# -- Glass stylesheet (font-size 13px everywhere for proper fitting) --
+# -- Glass stylesheet (balanced 14px — fits text, looks clean) --
 GLASS_STYLE = """
 QWidget {
     color: #e8e8f0;
     font-family: 'Segoe UI', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     background: transparent;
 }
 QTabWidget::pane {
@@ -149,13 +149,13 @@ QTabWidget::pane {
 QTabBar::tab {
     background: rgba(18, 18, 42, 140);
     color: #8888a8;
-    padding: 7px 14px;
+    padding: 8px 16px;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     margin-right: 2px;
     font-weight: 600;
-    font-size: 12px;
-    min-width: 60px;
+    font-size: 13px;
+    min-width: 70px;
 }
 QTabBar::tab:selected {
     background: rgba(25, 25, 55, 180);
@@ -171,9 +171,9 @@ QGroupBox {
     border: 1px solid rgba(100, 120, 200, 25);
     border-radius: 12px;
     margin-top: 14px;
-    padding: 18px 10px 10px 10px;
+    padding: 20px 12px 12px 12px;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
     color: #00d4ff;
 }
 QGroupBox::title {
@@ -187,10 +187,10 @@ QPushButton {
     background-color: rgba(20, 20, 48, 200);
     border: 1px solid rgba(80, 100, 180, 40);
     border-radius: 8px;
-    padding: 6px 14px;
+    padding: 7px 18px;
     color: #d4d4e8;
     font-weight: 500;
-    font-size: 13px;
+    font-size: 14px;
 }
 QPushButton:hover {
     background-color: rgba(35, 35, 72, 220);
@@ -202,16 +202,16 @@ QPushButton:pressed {
 }
 QPushButton#colorBtn {
     border: 2px solid #00d4ff;
-    border-radius: 14px;
-    min-width: 28px;
-    min-height: 28px;
+    border-radius: 15px;
+    min-width: 30px;
+    min-height: 30px;
 }
 QPushButton#accentBtn {
     background-color: rgba(0, 160, 210, 40);
     border: 1px solid rgba(0, 212, 255, 80);
     color: #00d4ff;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
 }
 QPushButton#accentBtn:hover {
     background-color: rgba(0, 190, 245, 60);
@@ -230,12 +230,12 @@ QPushButton#dangerBtn:hover {
     color: #ff6888;
 }
 QPushButton#themeBtn {
-    padding: 5px 8px;
+    padding: 6px 10px;
     font-size: 12px;
     border-radius: 8px;
 }
 QPushButton#themeBtnActive {
-    padding: 5px 8px;
+    padding: 6px 10px;
     font-size: 12px;
     border-radius: 8px;
     border: 2px solid rgba(0, 212, 255, 200);
@@ -247,7 +247,7 @@ QPushButton#descToggle {
     background: rgba(20, 20, 48, 160);
     border: 1px solid rgba(80, 100, 180, 30);
     border-radius: 6px;
-    padding: 5px 12px;
+    padding: 5px 14px;
     color: #8090b0;
     font-size: 12px;
     text-align: left;
@@ -263,10 +263,10 @@ QSlider::groove:horizontal {
 }
 QSlider::handle:horizontal {
     background: #00d4ff;
-    width: 14px;
-    height: 14px;
-    margin: -5px 0;
-    border-radius: 7px;
+    width: 16px;
+    height: 16px;
+    margin: -6px 0;
+    border-radius: 8px;
 }
 QSlider::sub-page:horizontal {
     background: rgba(0, 170, 230, 100);
@@ -278,7 +278,7 @@ QComboBox {
     border-radius: 8px;
     padding: 5px 10px;
     color: #d4d4e8;
-    font-size: 13px;
+    font-size: 14px;
     min-width: 100px;
 }
 QComboBox::drop-down { border: none; }
@@ -288,7 +288,7 @@ QComboBox QAbstractItemView {
     selection-background-color: rgba(0, 170, 230, 60);
     border: 1px solid rgba(80, 100, 180, 40);
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 14px;
 }
 QSpinBox {
     background-color: rgba(16, 16, 40, 200);
@@ -296,17 +296,17 @@ QSpinBox {
     border-radius: 6px;
     padding: 4px 8px;
     color: #d4d4e8;
-    font-size: 13px;
+    font-size: 14px;
     min-width: 60px;
 }
 QCheckBox {
     spacing: 8px;
-    font-size: 13px;
+    font-size: 14px;
 }
 QCheckBox::indicator {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
     border: 1px solid rgba(80, 100, 180, 50);
     background: rgba(16, 16, 40, 200);
 }
@@ -315,7 +315,7 @@ QCheckBox::indicator:checked {
     border-color: #00d4ff;
 }
 QLabel {
-    font-size: 13px;
+    font-size: 14px;
 }
 QLabel#sectionHelper {
     color: #606880;
@@ -326,20 +326,46 @@ QLabel#valueLabel {
     color: #00d4ff;
     font-weight: 700;
     min-width: 36px;
-    font-size: 13px;
+    font-size: 14px;
 }
 QScrollArea {
     border: none;
+    background: transparent;
+}
+/* ---- Visible glass scrollbar ---- */
+QScrollBar:vertical {
+    background: rgba(10, 10, 28, 80);
+    width: 10px;
+    border-radius: 5px;
+    margin: 2px 1px 2px 1px;
+}
+QScrollBar::handle:vertical {
+    background: rgba(0, 180, 240, 80);
+    border-radius: 4px;
+    min-height: 30px;
+}
+QScrollBar::handle:vertical:hover {
+    background: rgba(0, 212, 255, 130);
+}
+QScrollBar::handle:vertical:pressed {
+    background: rgba(0, 212, 255, 180);
+}
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
     background: transparent;
 }
 QProgressBar {
     background: rgba(16, 16, 40, 200);
     border: 1px solid rgba(80, 100, 180, 40);
     border-radius: 6px;
-    height: 18px;
+    height: 20px;
     text-align: center;
     color: #d4d4e8;
-    font-size: 11px;
+    font-size: 12px;
 }
 QProgressBar::chunk {
     background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
@@ -641,28 +667,32 @@ class SettingsPanel(QWidget):
 
         # -- Bottom buttons --
         btn_row = QHBoxLayout()
-        btn_row.setSpacing(6)
+        btn_row.setSpacing(8)
 
         self.btn_apply = QPushButton(t("btn.apply"))
         self.btn_apply.setObjectName("accentBtn")
+        self.btn_apply.setMinimumWidth(100)
         self.btn_apply.clicked.connect(self._apply_settings)
         btn_row.addWidget(self.btn_apply)
 
         self.btn_reset = QPushButton(t("btn.reset"))
+        self.btn_reset.setMinimumWidth(80)
         self.btn_reset.clicked.connect(self._reset_defaults)
         btn_row.addWidget(self.btn_reset)
 
         self.btn_hide = QPushButton(t("btn.show"))
+        self.btn_hide.setMinimumWidth(140)
         self.btn_hide.clicked.connect(self._toggle_overlay)
         btn_row.addWidget(self.btn_hide)
 
         self.btn_quit = QPushButton(t("btn.quit"))
         self.btn_quit.setObjectName("dangerBtn")
+        self.btn_quit.setMinimumWidth(80)
         self.btn_quit.clicked.connect(self._quit_app)
         btn_row.addWidget(self.btn_quit)
 
         btn_w = QWidget()
-        btn_w.setFixedHeight(36)
+        btn_w.setFixedHeight(42)
         btn_w.setLayout(btn_row)
         lay.addWidget(btn_w)
 
@@ -956,13 +986,13 @@ class SettingsPanel(QWidget):
             kl = QLabel(key)
             kl.setStyleSheet(
                 "background: rgba(0,170,230,30); padding: 3px 10px; border-radius: 5px;"
-                "font-weight: bold; color: #00d4ff; min-width: 32px; font-size: 12px;"
+                "font-weight: bold; color: #00d4ff; min-width: 32px; font-size: 13px;"
             )
             kl.setAlignment(Qt.AlignCenter)
-            kl.setFixedWidth(44)
+            kl.setFixedWidth(46)
             row.addWidget(kl)
             dl = QLabel(f"  {desc}")
-            dl.setStyleSheet("color: #a0a8c0; font-size: 12px;")
+            dl.setStyleSheet("color: #a0a8c0; font-size: 13px;")
             row.addWidget(dl)
             row.addStretch()
             hk_lay.addLayout(row)
@@ -982,31 +1012,78 @@ class SettingsPanel(QWidget):
         # System Resources
         sys_grp = QGroupBox(t("mon.system"))
         sg = QGridLayout(sys_grp)
-        sg.setVerticalSpacing(7)
+        sg.setVerticalSpacing(6)
         sg.setHorizontalSpacing(8)
-        sg.setColumnMinimumWidth(0, 110)
+        sg.setColumnMinimumWidth(0, 130)
         sg.setColumnStretch(1, 1)
 
-        sg.addWidget(QLabel(t("mon.cpu")), 0, 0)
+        row = 0
+        sg.addWidget(QLabel(t("mon.cpu")), row, 0)
         self._cpu_bar = QProgressBar()
         self._cpu_bar.setRange(0, 100)
         self._cpu_bar.setValue(0)
         self._cpu_bar.setFormat("0%")
-        sg.addWidget(self._cpu_bar, 0, 1)
+        sg.addWidget(self._cpu_bar, row, 1)
 
-        sg.addWidget(QLabel(t("mon.ram")), 1, 0)
+        row += 1
+        sg.addWidget(QLabel(t("mon.ram")), row, 0)
         self._ram_bar = QProgressBar()
         self._ram_bar.setRange(0, 100)
         self._ram_bar.setValue(0)
         self._ram_bar.setFormat("0%")
-        sg.addWidget(self._ram_bar, 1, 1)
+        sg.addWidget(self._ram_bar, row, 1)
 
-        sg.addWidget(QLabel(t("mon.gpu")), 2, 0)
+        row += 1
+        sg.addWidget(QLabel(t("mon.gpu")), row, 0)
         self._gpu_bar = QProgressBar()
         self._gpu_bar.setRange(0, 100)
         self._gpu_bar.setValue(0)
         self._gpu_bar.setFormat("N/A")
-        sg.addWidget(self._gpu_bar, 2, 1)
+        sg.addWidget(self._gpu_bar, row, 1)
+
+        row += 1
+        sg.addWidget(QLabel(t("mon.gpu_temp")), row, 0)
+        self._gpu_temp_lbl = QLabel("N/A")
+        self._gpu_temp_lbl.setStyleSheet("color: #d4d4e8; font-size: 13px;")
+        sg.addWidget(self._gpu_temp_lbl, row, 1)
+
+        row += 1
+        sg.addWidget(QLabel(t("mon.disk")), row, 0)
+        self._disk_bar = QProgressBar()
+        self._disk_bar.setRange(0, 100)
+        self._disk_bar.setValue(0)
+        self._disk_bar.setFormat("N/A")
+        sg.addWidget(self._disk_bar, row, 1)
+
+        row += 1
+        sg.addWidget(QLabel(t("mon.cpu_freq")), row, 0)
+        self._cpu_freq_lbl = QLabel("—")
+        self._cpu_freq_lbl.setStyleSheet("color: #d4d4e8; font-size: 13px;")
+        sg.addWidget(self._cpu_freq_lbl, row, 1)
+
+        row += 1
+        sg.addWidget(QLabel(t("mon.cpu_cores")), row, 0)
+        self._cpu_cores_lbl = QLabel("—")
+        self._cpu_cores_lbl.setStyleSheet("color: #d4d4e8; font-size: 13px;")
+        sg.addWidget(self._cpu_cores_lbl, row, 1)
+
+        row += 1
+        sg.addWidget(QLabel(t("mon.net_sent")), row, 0)
+        self._net_sent_lbl = QLabel("—")
+        self._net_sent_lbl.setStyleSheet("color: #80e0a0; font-size: 13px;")
+        sg.addWidget(self._net_sent_lbl, row, 1)
+
+        row += 1
+        sg.addWidget(QLabel(t("mon.net_recv")), row, 0)
+        self._net_recv_lbl = QLabel("—")
+        self._net_recv_lbl.setStyleSheet("color: #80c0e0; font-size: 13px;")
+        sg.addWidget(self._net_recv_lbl, row, 1)
+
+        row += 1
+        sg.addWidget(QLabel(t("mon.uptime")), row, 0)
+        self._uptime_lbl = QLabel("—")
+        self._uptime_lbl.setStyleSheet("color: #d4d4e8; font-size: 13px;")
+        sg.addWidget(self._uptime_lbl, row, 1)
 
         lay.addWidget(sys_grp)
 
@@ -1016,7 +1093,7 @@ class SettingsPanel(QWidget):
         gl.setSpacing(3)
         self._games_label = QLabel(t("mon.no_games"))
         self._games_label.setWordWrap(True)
-        self._games_label.setStyleSheet("color: #a0a8c0; font-size: 12px; padding: 4px;")
+        self._games_label.setStyleSheet("color: #a0a8c0; font-size: 13px; padding: 4px;")
         gl.addWidget(self._games_label)
         lay.addWidget(game_grp)
 
@@ -1035,6 +1112,10 @@ class SettingsPanel(QWidget):
         lay.addLayout(ctrl)
 
         lay.addStretch()
+
+        # Store initial net counters for delta calculation
+        self._last_net = None
+
         return self._make_scroll(w)
 
     # -- Profiles Tab --
@@ -1133,14 +1214,14 @@ class SettingsPanel(QWidget):
                 btn.setStyleSheet(
                     f"QPushButton {{ background: {_theme_colors[key]};"
                     f"border: 1px solid rgba(80,100,180,40); border-radius: 8px;"
-                    f"color: #a0a8c0; font-size: 12px; padding: 5px 8px; }}"
+                    f"color: #a0a8c0; font-size: 13px; padding: 6px 10px; }}"
                     f"QPushButton:hover {{ border-color: #00d4ff; color: #d0d8f0; }}"
                 )
             else:
                 btn.setStyleSheet(
                     f"QPushButton {{ background: rgba(0,160,220,30);"
                     f"border: 2px solid rgba(0,212,255,200); border-radius: 8px;"
-                    f"color: #00d4ff; font-weight: 700; font-size: 12px; padding: 5px 8px; }}"
+                    f"color: #00d4ff; font-weight: 700; font-size: 13px; padding: 6px 10px; }}"
                 )
 
     def _set_theme(self, theme_key):
@@ -1239,14 +1320,17 @@ class SettingsPanel(QWidget):
             self._mon_timer.stop()
 
     def _refresh_monitor(self):
-        """Update system resource bars and detected games list."""
+        """Update system resource bars, extra stats, and detected games."""
         try:
             import psutil
+            import time as _time
 
+            # CPU
             cpu_pct = psutil.cpu_percent(interval=0)
             self._cpu_bar.setValue(int(cpu_pct))
             self._cpu_bar.setFormat(f"{cpu_pct:.0f}%")
 
+            # RAM
             mem = psutil.virtual_memory()
             ram_pct = mem.percent
             used_gb = mem.used / (1024 ** 3)
@@ -1254,6 +1338,62 @@ class SettingsPanel(QWidget):
             self._ram_bar.setValue(int(ram_pct))
             self._ram_bar.setFormat(f"{ram_pct:.0f}%  ({used_gb:.1f}/{total_gb:.1f} GB)")
 
+            # Disk usage (C:)
+            try:
+                disk = psutil.disk_usage("C:\\")
+                disk_pct = disk.percent
+                disk_used = disk.used / (1024 ** 3)
+                disk_total = disk.total / (1024 ** 3)
+                self._disk_bar.setValue(int(disk_pct))
+                self._disk_bar.setFormat(f"{disk_pct:.0f}%  ({disk_used:.0f}/{disk_total:.0f} GB)")
+            except Exception:
+                self._disk_bar.setFormat("N/A")
+
+            # CPU frequency
+            try:
+                freq = psutil.cpu_freq()
+                if freq:
+                    self._cpu_freq_lbl.setText(f"{freq.current:.0f} MHz")
+                else:
+                    self._cpu_freq_lbl.setText("—")
+            except Exception:
+                self._cpu_freq_lbl.setText("—")
+
+            # Cores / threads
+            try:
+                phys = psutil.cpu_count(logical=False) or "?"
+                logic = psutil.cpu_count(logical=True) or "?"
+                self._cpu_cores_lbl.setText(f"{phys} / {logic}")
+            except Exception:
+                self._cpu_cores_lbl.setText("—")
+
+            # Network I/O (delta per refresh)
+            try:
+                net = psutil.net_io_counters()
+                if self._last_net is not None:
+                    sent_delta = net.bytes_sent - self._last_net.bytes_sent
+                    recv_delta = net.bytes_recv - self._last_net.bytes_recv
+                    self._net_sent_lbl.setText(self._fmt_bytes(sent_delta) + "/s")
+                    self._net_recv_lbl.setText(self._fmt_bytes(recv_delta) + "/s")
+                else:
+                    self._net_sent_lbl.setText(self._fmt_bytes(net.bytes_sent))
+                    self._net_recv_lbl.setText(self._fmt_bytes(net.bytes_recv))
+                self._last_net = net
+            except Exception:
+                self._net_sent_lbl.setText("—")
+                self._net_recv_lbl.setText("—")
+
+            # Uptime
+            try:
+                boot = psutil.boot_time()
+                elapsed = int(_time.time() - boot)
+                hours, rem = divmod(elapsed, 3600)
+                mins, secs = divmod(rem, 60)
+                self._uptime_lbl.setText(f"{hours}h {mins}m {secs}s")
+            except Exception:
+                self._uptime_lbl.setText("—")
+
+            # Detected games
             game_list = []
             for proc in psutil.process_iter(['name']):
                 try:
@@ -1265,33 +1405,51 @@ class SettingsPanel(QWidget):
 
             if game_list:
                 self._games_label.setText("\n".join(sorted(set(game_list))))
-                self._games_label.setStyleSheet("color: #80e0a0; font-size: 12px; padding: 4px;")
+                self._games_label.setStyleSheet("color: #80e0a0; font-size: 13px; padding: 4px;")
             else:
                 self._games_label.setText(t("mon.no_games"))
-                self._games_label.setStyleSheet("color: #a0a8c0; font-size: 12px; padding: 4px;")
+                self._games_label.setStyleSheet("color: #a0a8c0; font-size: 13px; padding: 4px;")
         except ImportError:
             self._cpu_bar.setFormat("N/A")
             self._ram_bar.setFormat("N/A")
             self._games_label.setText(t("mon.no_psutil"))
 
-        # GPU via nvidia-smi
+        # GPU via nvidia-smi (utilization + temperature)
         try:
             result = subprocess.run(
-                ["nvidia-smi", "--query-gpu=utilization.gpu",
+                ["nvidia-smi",
+                 "--query-gpu=utilization.gpu,temperature.gpu",
                  "--format=csv,noheader,nounits"],
                 capture_output=True, text=True, timeout=2,
                 creationflags=0x08000000,  # CREATE_NO_WINDOW
             )
             if result.returncode == 0:
-                gpu_pct = float(result.stdout.strip().split('\n')[0])
+                parts = result.stdout.strip().split('\n')[0].split(',')
+                gpu_pct = float(parts[0].strip())
                 self._gpu_bar.setValue(int(gpu_pct))
                 self._gpu_bar.setFormat(f"{gpu_pct:.0f}%")
+                if len(parts) > 1:
+                    gpu_temp = parts[1].strip()
+                    self._gpu_temp_lbl.setText(f"{gpu_temp} °C")
+                else:
+                    self._gpu_temp_lbl.setText("N/A")
             else:
                 self._gpu_bar.setValue(0)
                 self._gpu_bar.setFormat("N/A")
+                self._gpu_temp_lbl.setText("N/A")
         except Exception:
             self._gpu_bar.setValue(0)
             self._gpu_bar.setFormat("N/A")
+            self._gpu_temp_lbl.setText("N/A")
+
+    @staticmethod
+    def _fmt_bytes(b: float) -> str:
+        """Format bytes to human-readable string."""
+        for unit in ("B", "KB", "MB", "GB"):
+            if abs(b) < 1024:
+                return f"{b:.1f} {unit}"
+            b /= 1024
+        return f"{b:.1f} TB"
 
     # ================================================================
     #                    APPLY / RESET / CONFIG
