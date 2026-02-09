@@ -2203,21 +2203,30 @@ class SettingsPanel(QWidget):
     @staticmethod
     def _ssl_ctx():
         """Create SSL context that works inside PyInstaller bundle."""
+        # Try certifi CA bundle first (bundled by PyInstaller)
         try:
-            return ssl.create_default_context()
-        except Exception:
-            ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
+            import certifi
+            ctx = ssl.create_default_context(cafile=certifi.where())
             return ctx
+        except Exception:
+            pass
+        # Fallback: disable verification entirely
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        return ctx
 
     def _do_roblox_search(self, username):
         """Background: query Roblox APIs and post result to main thread."""
         _hdrs = {
             "Accept": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         }
-        _ctx = self._ssl_ctx()
+        try:
+            _ctx = self._ssl_ctx()
+        except Exception as e:
+            QTimer.singleShot(0, lambda: self._show_roblox_error(f"SSL init: {e}"))
+            return
         try:
             # 1. Search user (Roblox API requires limit >= 10)
             url = (
@@ -2225,7 +2234,7 @@ class SettingsPanel(QWidget):
                 f"?keyword={urllib.parse.quote(username)}&limit=10"
             )
             req = urllib.request.Request(url, headers=_hdrs)
-            with urllib.request.urlopen(req, timeout=10, context=_ctx) as resp:
+            with urllib.request.urlopen(req, timeout=15, context=_ctx) as resp:
                 data = json.loads(resp.read().decode())
             users = data.get("data", [])
             if not users:
@@ -2237,7 +2246,7 @@ class SettingsPanel(QWidget):
             # 2. Full user details
             url2 = f"https://users.roblox.com/v1/users/{user_id}"
             req2 = urllib.request.Request(url2, headers=_hdrs)
-            with urllib.request.urlopen(req2, timeout=10, context=_ctx) as resp2:
+            with urllib.request.urlopen(req2, timeout=15, context=_ctx) as resp2:
                 details = json.loads(resp2.read().decode())
 
             # 3. Presence (online / in-game)
@@ -2249,7 +2258,7 @@ class SettingsPanel(QWidget):
                     **_hdrs,
                     "Content-Type": "application/json",
                 })
-                with urllib.request.urlopen(req3, timeout=10, context=_ctx) as resp3:
+                with urllib.request.urlopen(req3, timeout=15, context=_ctx) as resp3:
                     pd = json.loads(resp3.read().decode())
                 presences = pd.get("userPresences", [])
                 if presences:
@@ -2265,7 +2274,7 @@ class SettingsPanel(QWidget):
                     f"?userIds={user_id}&size=150x150&format=Png&isCircular=false"
                 )
                 req4 = urllib.request.Request(url4, headers=_hdrs)
-                with urllib.request.urlopen(req4, timeout=10, context=_ctx) as resp4:
+                with urllib.request.urlopen(req4, timeout=15, context=_ctx) as resp4:
                     td = json.loads(resp4.read().decode())
                 thumbs = td.get("data", [])
                 if thumbs and thumbs[0].get("imageUrl"):
@@ -2286,7 +2295,8 @@ class SettingsPanel(QWidget):
             QTimer.singleShot(0, lambda r=result: self._show_roblox_result(r))
 
         except Exception as e:
-            QTimer.singleShot(0, lambda: self._show_roblox_error(str(e)))
+            err_msg = f"{type(e).__name__}: {str(e)[:150]}"
+            QTimer.singleShot(0, lambda m=err_msg: self._show_roblox_error(m))
 
     def _show_roblox_result(self, result):
         """Display Roblox user info in the results area."""
