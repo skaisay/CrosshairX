@@ -21,7 +21,7 @@ class OverlayWindow(QWidget):
     Adaptive FPS: high when animating, low when idle.
     """
 
-    IDLE_FPS = 10
+    IDLE_FPS = 5
     ACTIVE_FPS = 60
 
     def __init__(self, config: Config, parent=None):

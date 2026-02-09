@@ -124,9 +124,34 @@ _STRINGS = {
     "mon.games": {"ru": "Обнаруженные игры", "en": "Detected Games"},
     "mon.no_games": {"ru": "Игры не обнаружены", "en": "No games detected"},
     "mon.refresh": {"ru": "Обновить", "en": "Refresh"},
-    "mon.auto_refresh": {"ru": "Автообновление (3 сек)", "en": "Auto-refresh (3 sec)"},
+    "mon.auto_refresh": {"ru": "Автообновление (5 сек)", "en": "Auto-refresh (5 sec)"},
     "mon.no_psutil": {"ru": "Установите psutil для мониторинга", "en": "Install psutil for monitoring"},
     "mon.process": {"ru": "Процесс", "en": "Process"},
+
+    # ---- Games tab ----
+    "tab.games": {"ru": "Игры", "en": "Games"},
+    "games.detected": {"ru": "Обнаруженные игры", "en": "Detected Games"},
+    "games.no_games": {
+        "ru": "Запустите игру — CrosshairX обнаружит её автоматически",
+        "en": "Launch a game — CrosshairX will detect it automatically",
+    },
+    "games.recommended": {"ru": "Рекомендуемые настройки", "en": "Recommended Settings"},
+    "games.recommended_hint": {
+        "ru": "Оптимальные настройки прицела для обнаруженной игры",
+        "en": "Optimal crosshair settings for the detected game",
+    },
+    "games.apply_preset": {"ru": "Применить для {game}", "en": "Apply for {game}"},
+    "games.tips": {"ru": "Советы для игры", "en": "Game Tips"},
+    "games.no_tips": {
+        "ru": "Советы появятся при обнаружении игры",
+        "en": "Tips will appear when a game is detected",
+    },
+    "games.no_preset": {
+        "ru": "Пресет появится при обнаружении игры",
+        "en": "Preset will appear when a game is detected",
+    },
+    "games.auto_detect": {"ru": "Автообнаружение (5 сек)", "en": "Auto-detect (5 sec)"},
+    "games.refresh": {"ru": "Обновить", "en": "Refresh"},
 
     # ---- Profiles tab ----
     "prof.title": {"ru": "Профили прицелов", "en": "Crosshair Profiles"},

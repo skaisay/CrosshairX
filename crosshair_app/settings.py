@@ -93,6 +93,178 @@ KNOWN_GAMES = {
     "PalWorld-Win64-Shipping.exe": "Palworld",
 }
 
+# -- Recommended crosshair presets per game --
+GAME_PRESETS = {
+    "Roblox": {
+        "style": "cross", "size": 16, "thickness": 2, "gap": 3,
+        "color": [0, 255, 128, 255], "dot": True, "dot_size": 2,
+        "outline": True, "outline_thickness": 1, "t_style": False,
+    },
+    "Counter-Strike 2": {
+        "style": "cross", "size": 8, "thickness": 1, "gap": 3,
+        "color": [0, 255, 0, 255], "dot": False, "dot_size": 1,
+        "outline": True, "outline_thickness": 1, "t_style": False,
+    },
+    "CS:GO": {
+        "style": "cross", "size": 8, "thickness": 1, "gap": 3,
+        "color": [0, 255, 0, 255], "dot": False, "dot_size": 1,
+        "outline": True, "outline_thickness": 1, "t_style": False,
+    },
+    "Valorant": {
+        "style": "crossdot", "size": 12, "thickness": 2, "gap": 4,
+        "color": [0, 255, 100, 255], "dot": True, "dot_size": 2,
+        "outline": True, "outline_thickness": 1, "t_style": False,
+    },
+    "Fortnite": {
+        "style": "cross", "size": 14, "thickness": 2, "gap": 4,
+        "color": [255, 255, 255, 255], "dot": True, "dot_size": 2,
+        "outline": True, "outline_thickness": 1, "t_style": False,
+    },
+    "Apex Legends": {
+        "style": "circle", "size": 18, "thickness": 2, "gap": 5,
+        "color": [255, 50, 50, 255], "dot": True, "dot_size": 2,
+        "outline": True, "outline_thickness": 1, "t_style": False,
+    },
+    "Overwatch 2": {
+        "style": "crossdot", "size": 10, "thickness": 2, "gap": 5,
+        "color": [0, 255, 0, 255], "dot": True, "dot_size": 3,
+        "outline": False, "outline_thickness": 1, "t_style": False,
+    },
+    "Minecraft (Java)": {
+        "style": "plus_thin", "size": 20, "thickness": 2, "gap": 0,
+        "color": [255, 255, 255, 200], "dot": False, "dot_size": 1,
+        "outline": False, "outline_thickness": 1, "t_style": False,
+    },
+    "Minecraft (Bedrock)": {
+        "style": "plus_thin", "size": 20, "thickness": 2, "gap": 0,
+        "color": [255, 255, 255, 200], "dot": False, "dot_size": 1,
+        "outline": False, "outline_thickness": 1, "t_style": False,
+    },
+    "PUBG": {
+        "style": "cross", "size": 10, "thickness": 1, "gap": 4,
+        "color": [255, 255, 255, 255], "dot": True, "dot_size": 2,
+        "outline": True, "outline_thickness": 1, "t_style": False,
+    },
+    "Dota 2": {
+        "style": "crosscircle", "size": 22, "thickness": 2, "gap": 6,
+        "color": [255, 200, 0, 200], "dot": True, "dot_size": 3,
+        "outline": False, "outline_thickness": 1, "t_style": False,
+    },
+    "GTA V": {
+        "style": "dot", "size": 6, "thickness": 2, "gap": 0,
+        "color": [255, 255, 255, 220], "dot": True, "dot_size": 3,
+        "outline": True, "outline_thickness": 1, "t_style": False,
+    },
+}
+
+# -- Game tips (bilingual) --
+GAME_TIPS = {
+    "Roblox": {
+        "ru": [
+            "Маленький крест (16px) идеален для Arsenal и Phantom Forces",
+            "T-стиль улучшает видимость противников под прицелом",
+            "Зелёный цвет виден на большинстве карт Roblox",
+            "Обводка помогает видеть прицел на ярких поверхностях",
+        ],
+        "en": [
+            "Small cross (16px) is ideal for Arsenal and Phantom Forces",
+            "T-style improves enemy visibility below the crosshair",
+            "Green color is visible on most Roblox maps",
+            "Outline helps see crosshair on bright surfaces",
+        ],
+    },
+    "Counter-Strike 2": {
+        "ru": [
+            "Тонкий крест (1px) — стандарт для про-игроков CS",
+            "Маленький gap помогает точнее целиться на головы",
+            "Отключите точку — она мешает на дальних дистанциях",
+            "Зелёный цвет — классика CS, виден на любой карте",
+        ],
+        "en": [
+            "Thin cross (1px) is standard for CS pro players",
+            "Small gap helps aim at heads more precisely",
+            "Disable dot — it interferes at long distances",
+            "Green — classic CS color, visible on any map",
+        ],
+    },
+    "CS:GO": {
+        "ru": [
+            "Тонкий крест (1px) — стандарт для CS",
+            "Точка в центре мешает на дальней дистанции",
+        ],
+        "en": [
+            "Thin cross (1px) is standard for CS",
+            "Center dot interferes at long distance",
+        ],
+    },
+    "Valorant": {
+        "ru": [
+            "Средний крест с точкой — стандарт Valorant",
+            "Прицел 12-14px оптимален для перестрелок",
+            "Используйте обводку для лучшей видимости",
+        ],
+        "en": [
+            "Medium cross with dot is Valorant standard",
+            "12-14px crosshair is optimal for gunfights",
+            "Use outline for better visibility",
+        ],
+    },
+    "Fortnite": {
+        "ru": [
+            "Белый крест хорошо видно при строительстве",
+            "Точка в центре помогает при стрельбе от бедра",
+            "Средний размер (14px) для баланса ближний/дальний бой",
+        ],
+        "en": [
+            "White cross is clearly visible while building",
+            "Center dot helps with hip-fire",
+            "Medium size (14px) balances close/long range",
+        ],
+    },
+    "Apex Legends": {
+        "ru": [
+            "Круг подходит для отслеживания быстрых целей",
+            "Красный цвет хорошо виден в Apex",
+            "Большой размер помогает при стрельбе навскидку",
+        ],
+        "en": [
+            "Circle suits tracking fast targets",
+            "Red color is clearly visible in Apex",
+            "Larger size helps with snap-aiming",
+        ],
+    },
+    "Overwatch 2": {
+        "ru": [
+            "Крест с точкой (10px) — универсальный выбор",
+            "Зелёный цвет оптимален для большинства карт",
+        ],
+        "en": [
+            "Cross with dot (10px) — universal choice",
+            "Green color is optimal for most maps",
+        ],
+    },
+    "Minecraft (Java)": {
+        "ru": [
+            "Тонкий плюс заменяет стандартный прицел Minecraft",
+            "Белый цвет с прозрачностью не мешает обзору",
+        ],
+        "en": [
+            "Thin plus replaces default Minecraft crosshair",
+            "White with transparency doesn't obstruct the view",
+        ],
+    },
+    "Minecraft (Bedrock)": {
+        "ru": [
+            "Тонкий плюс заменяет стандартный прицел Minecraft",
+            "Белый цвет с прозрачностью не мешает обзору",
+        ],
+        "en": [
+            "Thin plus replaces default Minecraft crosshair",
+            "White with transparency doesn't obstruct the view",
+        ],
+    },
+}
+
 
 def _enable_acrylic(hwnd, tint=0x14000000):
     """Enable Windows 10/11 acrylic blur behind the window (best-effort)."""
@@ -155,7 +327,7 @@ QTabBar::tab {
     margin-right: 2px;
     font-weight: 600;
     font-size: 13px;
-    min-width: 70px;
+    min-width: 64px;
 }
 QTabBar::tab:selected {
     background: rgba(25, 25, 55, 180);
@@ -509,7 +681,7 @@ class SettingsPanel(QWidget):
     close_app = pyqtSignal()
     hide_to_tray = pyqtSignal()
 
-    W, H = 901, 631
+    W, H = 980, 660
 
     STYLE_KEYS = [
         "cross", "dot", "circle", "chevron", "diamond", "crossdot",
@@ -557,12 +729,22 @@ class SettingsPanel(QWidget):
         self._mon_timer.timeout.connect(self._refresh_monitor)
         self._mon_auto = False
 
+        # Games auto-detect timer
+        self._games_timer = QTimer(self)
+        self._games_timer.timeout.connect(self._refresh_games)
+        self._games_auto = False
+        self._detected_games = []
+
     # -- Wallpaper --
 
     def _load_wallpaper(self):
         img_path = _resource_path(os.path.join("assets", "themes", f"{self._theme}.png"))
         if os.path.exists(img_path):
-            self._bg_pixmap = QPixmap(img_path)
+            raw = QPixmap(img_path)
+            # Scale to window size immediately to save memory
+            self._bg_pixmap = raw.scaled(
+                self.W, self.H, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
+            )
         else:
             self._bg_pixmap = None
 
@@ -574,13 +756,11 @@ class SettingsPanel(QWidget):
         p.setClipPath(path)
 
         if self._bg_pixmap and not self._bg_pixmap.isNull():
-            scaled = self._bg_pixmap.scaled(
-                self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
-            )
-            x = (scaled.width() - self.width()) // 2
-            y = (scaled.height() - self.height()) // 2
+            # Wallpaper is pre-scaled to window size
+            x = max(0, (self._bg_pixmap.width() - self.width()) // 2)
+            y = max(0, (self._bg_pixmap.height() - self.height()) // 2)
             p.setOpacity(0.88)
-            p.drawPixmap(0, 0, scaled, x, y, self.width(), self.height())
+            p.drawPixmap(0, 0, self._bg_pixmap, x, y, self.width(), self.height())
             p.setOpacity(1.0)
             p.fillRect(self.rect(), QColor(0, 0, 0, 30))
         else:
@@ -662,6 +842,7 @@ class SettingsPanel(QWidget):
         self.tabs.addTab(self._build_animation_tab(), t("tab.animation"))
         self.tabs.addTab(self._build_display_tab(), t("tab.display"))
         self.tabs.addTab(self._build_monitor_tab(), t("tab.monitor"))
+        self.tabs.addTab(self._build_games_tab(), t("tab.games"))
         self.tabs.addTab(self._build_profiles_tab(), t("tab.profiles"))
         lay.addWidget(self.tabs)
 
@@ -1087,16 +1268,6 @@ class SettingsPanel(QWidget):
 
         lay.addWidget(sys_grp)
 
-        # Detected Games
-        game_grp = QGroupBox(t("mon.games"))
-        gl = QVBoxLayout(game_grp)
-        gl.setSpacing(3)
-        self._games_label = QLabel(t("mon.no_games"))
-        self._games_label.setWordWrap(True)
-        self._games_label.setStyleSheet("color: #a0a8c0; font-size: 13px; padding: 4px;")
-        gl.addWidget(self._games_label)
-        lay.addWidget(game_grp)
-
         # Controls
         ctrl = QHBoxLayout()
         ctrl.setSpacing(8)
@@ -1116,6 +1287,60 @@ class SettingsPanel(QWidget):
         # Store initial net counters for delta calculation
         self._last_net = None
 
+        return self._make_scroll(w)
+
+    # -- Games Tab (detected games + presets + tips) --
+
+    def _build_games_tab(self):
+        w = QWidget()
+        lay = QVBoxLayout(w)
+        lay.setSpacing(6)
+        lay.setContentsMargins(6, 4, 6, 4)
+
+        # Detected Games
+        game_grp = QGroupBox(t("games.detected"))
+        gl = QVBoxLayout(game_grp)
+        gl.setSpacing(4)
+        self._games_label = QLabel(t("games.no_games"))
+        self._games_label.setWordWrap(True)
+        self._games_label.setStyleSheet("color: #a0a8c0; font-size: 13px; padding: 4px;")
+        gl.addWidget(self._games_label)
+        lay.addWidget(game_grp)
+
+        # Controls
+        ctrl = QHBoxLayout()
+        ctrl.setSpacing(8)
+        btn_refresh_games = QPushButton(t("games.refresh"))
+        btn_refresh_games.setObjectName("accentBtn")
+        btn_refresh_games.clicked.connect(self._refresh_games)
+        ctrl.addWidget(btn_refresh_games)
+        self._chk_auto_games = QCheckBox(t("games.auto_detect"))
+        self._chk_auto_games.stateChanged.connect(self._toggle_games_auto)
+        ctrl.addWidget(self._chk_auto_games)
+        ctrl.addStretch()
+        lay.addLayout(ctrl)
+
+        # Recommended presets
+        preset_grp = QGroupBox(t("games.recommended"))
+        self._preset_lay = QVBoxLayout(preset_grp)
+        self._preset_lay.setSpacing(4)
+        _ph = QLabel(t("games.no_preset"))
+        _ph.setObjectName("sectionHelper")
+        _ph.setWordWrap(True)
+        self._preset_lay.addWidget(_ph)
+        lay.addWidget(preset_grp)
+
+        # Tips
+        tips_grp = QGroupBox(t("games.tips"))
+        self._tips_lay = QVBoxLayout(tips_grp)
+        self._tips_lay.setSpacing(3)
+        _th = QLabel(t("games.no_tips"))
+        _th.setObjectName("sectionHelper")
+        _th.setWordWrap(True)
+        self._tips_lay.addWidget(_th)
+        lay.addWidget(tips_grp)
+
+        lay.addStretch()
         return self._make_scroll(w)
 
     # -- Profiles Tab --
@@ -1313,11 +1538,106 @@ class SettingsPanel(QWidget):
     def _toggle_monitor_auto(self, state):
         if state == Qt.Checked:
             self._mon_auto = True
-            self._mon_timer.start(3000)
+            self._mon_timer.start(5000)
             self._refresh_monitor()
         else:
             self._mon_auto = False
             self._mon_timer.stop()
+
+    def _toggle_games_auto(self, state):
+        if state == Qt.Checked:
+            self._games_auto = True
+            self._games_timer.start(5000)
+            self._refresh_games()
+        else:
+            self._games_auto = False
+            self._games_timer.stop()
+
+    def _refresh_games(self):
+        """Scan running processes for known games and update Games tab."""
+        try:
+            import psutil
+            game_list = []
+            for proc in psutil.process_iter(['name']):
+                try:
+                    name = proc.info['name']
+                    if name in KNOWN_GAMES:
+                        game_list.append(KNOWN_GAMES[name])
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+            self._detected_games = sorted(set(game_list))
+        except ImportError:
+            self._detected_games = []
+
+        # Update games label
+        if self._detected_games:
+            display = "\n".join(f"  {g}" for g in self._detected_games)
+            self._games_label.setText(display)
+            self._games_label.setStyleSheet("color: #80e0a0; font-size: 14px; padding: 4px;")
+        else:
+            self._games_label.setText(t("games.no_games"))
+            self._games_label.setStyleSheet("color: #a0a8c0; font-size: 13px; padding: 4px;")
+
+        # Update presets
+        self._clear_layout(self._preset_lay)
+        has_preset = False
+        for game in self._detected_games:
+            if game in GAME_PRESETS:
+                has_preset = True
+                hint = QLabel(t("games.recommended_hint"))
+                hint.setObjectName("sectionHelper")
+                hint.setWordWrap(True)
+                self._preset_lay.addWidget(hint)
+                btn = QPushButton(t("games.apply_preset", game=game))
+                btn.setObjectName("accentBtn")
+                btn.clicked.connect(lambda checked, g=game: self._apply_game_preset(g))
+                self._preset_lay.addWidget(btn)
+        if not has_preset:
+            lbl = QLabel(t("games.no_preset"))
+            lbl.setObjectName("sectionHelper")
+            lbl.setWordWrap(True)
+            self._preset_lay.addWidget(lbl)
+
+        # Update tips
+        self._clear_layout(self._tips_lay)
+        has_tips = False
+        lang = get_language()
+        for game in self._detected_games:
+            if game in GAME_TIPS:
+                has_tips = True
+                tips = GAME_TIPS[game].get(lang, GAME_TIPS[game].get("en", []))
+                for tip_text in tips:
+                    lbl = QLabel(f"  {tip_text}")
+                    lbl.setWordWrap(True)
+                    lbl.setStyleSheet("color: #b0b8d0; font-size: 13px; padding: 2px 4px;")
+                    self._tips_lay.addWidget(lbl)
+        if not has_tips:
+            lbl = QLabel(t("games.no_tips"))
+            lbl.setObjectName("sectionHelper")
+            lbl.setWordWrap(True)
+            self._tips_lay.addWidget(lbl)
+
+    def _apply_game_preset(self, game_name: str):
+        """Apply recommended crosshair preset for a specific game."""
+        preset = GAME_PRESETS.get(game_name)
+        if not preset:
+            return
+        c = self.config
+        c.set("crosshair.style", preset.get("style", "cross"))
+        c.set("crosshair.size", preset.get("size", 20))
+        c.set("crosshair.thickness", preset.get("thickness", 2))
+        c.set("crosshair.gap", preset.get("gap", 4))
+        c.set("crosshair.color", preset.get("color", [0, 255, 0, 255]))
+        c.set("crosshair.dot", preset.get("dot", True))
+        c.set("crosshair.dot_size", preset.get("dot_size", 2))
+        c.set("crosshair.outline", preset.get("outline", True))
+        c.set("crosshair.outline_thickness", preset.get("outline_thickness", 1))
+        c.set("crosshair.t_style", preset.get("t_style", False))
+        c.save()
+        self._load_from_config()
+        self.overlay.refresh_config()
+        self.overlay.set_visible(True)
+        self.btn_hide.setText(t("btn.hide"))
 
     def _refresh_monitor(self):
         """Update system resource bars, extra stats, and detected games."""
@@ -1393,26 +1713,9 @@ class SettingsPanel(QWidget):
             except Exception:
                 self._uptime_lbl.setText("—")
 
-            # Detected games
-            game_list = []
-            for proc in psutil.process_iter(['name']):
-                try:
-                    name = proc.info['name']
-                    if name in KNOWN_GAMES:
-                        game_list.append(f"  {KNOWN_GAMES[name]}  ({name})")
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    pass
-
-            if game_list:
-                self._games_label.setText("\n".join(sorted(set(game_list))))
-                self._games_label.setStyleSheet("color: #80e0a0; font-size: 13px; padding: 4px;")
-            else:
-                self._games_label.setText(t("mon.no_games"))
-                self._games_label.setStyleSheet("color: #a0a8c0; font-size: 13px; padding: 4px;")
         except ImportError:
             self._cpu_bar.setFormat("N/A")
             self._ram_bar.setFormat("N/A")
-            self._games_label.setText(t("mon.no_psutil"))
 
         # GPU via nvidia-smi (utilization + temperature)
         try:

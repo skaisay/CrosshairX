@@ -227,7 +227,7 @@ class CrosshairXApp:
 
         self._hotkey_timer = QTimer()
         self._hotkey_timer.timeout.connect(self._check_hotkeys)
-        self._hotkey_timer.start(50)  # Check every 50ms
+        self._hotkey_timer.start(80)  # Check every 80ms (optimized)
 
         self._key_states = {}
 
