@@ -4,26 +4,31 @@ Modern glassmorphism + wallpaper background, bilingual (RU/EN).
 
 Window behavior:
   Close    (X)  = hide to tray, app keeps running
-  Minimize (—)  = minimize to taskbar (native Qt)
-  Выход button  = FULL QUIT — kills overlay + process
-  Tray Quit     = FULL QUIT — kills overlay + process
+  Minimize (-)  = minimize to taskbar (native Qt)
+  Quit button   = FULL QUIT - kills overlay + process
+  Tray Quit     = FULL QUIT - kills overlay + process
 """
 
 import os
 import sys
 import json
 import ctypes
+import subprocess
 
-from PyQt5.QtCore import Qt, pyqtSignal, QRect, QPoint, QTimer
+from PyQt5.QtCore import (
+    Qt, pyqtSignal, QRect, QPoint, QTimer,
+    QPropertyAnimation, QEasingCurve,
+)
 from PyQt5.QtGui import (
     QColor, QFont, QPainter, QPen, QBrush,
-    QLinearGradient, QPixmap, QImage, QPainterPath, QRegion
+    QLinearGradient, QPixmap, QImage, QPainterPath, QRegion,
 )
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QComboBox,
     QPushButton, QGroupBox, QCheckBox, QColorDialog, QSpinBox,
     QTabWidget, QGridLayout, QMessageBox, QInputDialog, QScrollArea,
-    QDialog, QTextEdit, QApplication
+    QDialog, QTextEdit, QApplication, QProgressBar, QSizePolicy,
+    QFrame,
 )
 
 from .i18n import t, set_language, get_language
@@ -38,8 +43,55 @@ def _resource_path(relative: str) -> str:
     return os.path.join(base, relative)
 
 
-# ── Theme wallpaper paths ──
+# -- Theme wallpaper paths --
 THEME_KEYS = ["midnight", "purple", "ocean", "sakura"]
+
+# -- Known game executables for monitoring --
+KNOWN_GAMES = {
+    "RobloxPlayerBeta.exe": "Roblox",
+    "FortniteClient-Win64-Shipping.exe": "Fortnite",
+    "csgo.exe": "CS:GO",
+    "cs2.exe": "Counter-Strike 2",
+    "valorant.exe": "Valorant",
+    "VALORANT-Win64-Shipping.exe": "Valorant",
+    "javaw.exe": "Minecraft (Java)",
+    "Minecraft.Windows.exe": "Minecraft (Bedrock)",
+    "GTA5.exe": "GTA V",
+    "r5apex.exe": "Apex Legends",
+    "overwatch.exe": "Overwatch 2",
+    "dota2.exe": "Dota 2",
+    "LeagueofLegends.exe": "League of Legends",
+    "League of Legends.exe": "League of Legends",
+    "PUBG-Win64-Shipping.exe": "PUBG",
+    "TslGame.exe": "PUBG",
+    "RocketLeague.exe": "Rocket League",
+    "eldenring.exe": "Elden Ring",
+    "Cyberpunk2077.exe": "Cyberpunk 2077",
+    "cod.exe": "Call of Duty",
+    "ModernWarfare.exe": "Call of Duty: MW",
+    "destiny2.exe": "Destiny 2",
+    "Warframe.x64.exe": "Warframe",
+    "GenshinImpact.exe": "Genshin Impact",
+    "ZenlessZoneZero.exe": "Zenless Zone Zero",
+    "HonkaiStarRail.exe": "Honkai: Star Rail",
+    "DeadByDaylight-Win64-Shipping.exe": "Dead By Daylight",
+    "Terraria.exe": "Terraria",
+    "left4dead2.exe": "Left 4 Dead 2",
+    "hl2.exe": "Half-Life 2",
+    "rust.exe": "Rust",
+    "EscapeFromTarkov.exe": "Escape from Tarkov",
+    "DayZGame_x64.exe": "DayZ",
+    "bf2042.exe": "Battlefield 2042",
+    "WorldOfTanks.exe": "World of Tanks",
+    "WoT.exe": "World of Tanks",
+    "WorldOfWarships.exe": "World of Warships",
+    "Warthunder.exe": "War Thunder",
+    "aces.exe": "War Thunder",
+    "Overwatch.exe": "Overwatch 2",
+    "amongus.exe": "Among Us",
+    "FallGuys_client_game.exe": "Fall Guys",
+    "PalWorld-Win64-Shipping.exe": "Palworld",
+}
 
 
 def _enable_acrylic(hwnd, tint=0x14000000):
@@ -81,12 +133,12 @@ def _enable_acrylic(hwnd, tint=0x14000000):
         pass
 
 
-# ── Glass stylesheet ──
+# -- Glass stylesheet (font-size 13px everywhere for proper fitting) --
 GLASS_STYLE = """
 QWidget {
     color: #e8e8f0;
     font-family: 'Segoe UI', sans-serif;
-    font-size: 15px;
+    font-size: 13px;
     background: transparent;
 }
 QTabWidget::pane {
@@ -97,13 +149,13 @@ QTabWidget::pane {
 QTabBar::tab {
     background: rgba(18, 18, 42, 140);
     color: #8888a8;
-    padding: 10px 24px;
+    padding: 7px 14px;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     margin-right: 2px;
     font-weight: 600;
-    font-size: 14px;
-    min-width: 85px;
+    font-size: 12px;
+    min-width: 60px;
 }
 QTabBar::tab:selected {
     background: rgba(25, 25, 55, 180);
@@ -118,27 +170,27 @@ QGroupBox {
     background-color: rgba(12, 12, 30, 120);
     border: 1px solid rgba(100, 120, 200, 25);
     border-radius: 12px;
-    margin-top: 18px;
-    padding: 22px 16px 16px 16px;
+    margin-top: 14px;
+    padding: 18px 10px 10px 10px;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 13px;
     color: #00d4ff;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
-    left: 16px;
-    padding: 0 8px;
+    left: 14px;
+    padding: 0 6px;
     color: #00d4ff;
-    font-size: 15px;
+    font-size: 13px;
 }
 QPushButton {
     background-color: rgba(20, 20, 48, 200);
     border: 1px solid rgba(80, 100, 180, 40);
     border-radius: 8px;
-    padding: 8px 18px;
+    padding: 6px 14px;
     color: #d4d4e8;
     font-weight: 500;
-    font-size: 15px;
+    font-size: 13px;
 }
 QPushButton:hover {
     background-color: rgba(35, 35, 72, 220);
@@ -159,7 +211,7 @@ QPushButton#accentBtn {
     border: 1px solid rgba(0, 212, 255, 80);
     color: #00d4ff;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 13px;
 }
 QPushButton#accentBtn:hover {
     background-color: rgba(0, 190, 245, 60);
@@ -178,18 +230,31 @@ QPushButton#dangerBtn:hover {
     color: #ff6888;
 }
 QPushButton#themeBtn {
-    padding: 6px 10px;
-    font-size: 13px;
+    padding: 5px 8px;
+    font-size: 12px;
     border-radius: 8px;
 }
 QPushButton#themeBtnActive {
-    padding: 6px 10px;
-    font-size: 13px;
+    padding: 5px 8px;
+    font-size: 12px;
     border-radius: 8px;
     border: 2px solid rgba(0, 212, 255, 200);
     background: rgba(0, 160, 220, 30);
     color: #00d4ff;
     font-weight: 700;
+}
+QPushButton#descToggle {
+    background: rgba(20, 20, 48, 160);
+    border: 1px solid rgba(80, 100, 180, 30);
+    border-radius: 6px;
+    padding: 5px 12px;
+    color: #8090b0;
+    font-size: 12px;
+    text-align: left;
+}
+QPushButton#descToggle:hover {
+    background: rgba(30, 30, 60, 180);
+    color: #a8b8d8;
 }
 QSlider::groove:horizontal {
     height: 5px;
@@ -198,10 +263,10 @@ QSlider::groove:horizontal {
 }
 QSlider::handle:horizontal {
     background: #00d4ff;
-    width: 16px;
-    height: 16px;
-    margin: -6px 0;
-    border-radius: 8px;
+    width: 14px;
+    height: 14px;
+    margin: -5px 0;
+    border-radius: 7px;
 }
 QSlider::sub-page:horizontal {
     background: rgba(0, 170, 230, 100);
@@ -211,10 +276,10 @@ QComboBox {
     background-color: rgba(16, 16, 40, 200);
     border: 1px solid rgba(80, 100, 180, 40);
     border-radius: 8px;
-    padding: 6px 12px;
+    padding: 5px 10px;
     color: #d4d4e8;
-    font-size: 15px;
-    min-width: 120px;
+    font-size: 13px;
+    min-width: 100px;
 }
 QComboBox::drop-down { border: none; }
 QComboBox QAbstractItemView {
@@ -223,24 +288,24 @@ QComboBox QAbstractItemView {
     selection-background-color: rgba(0, 170, 230, 60);
     border: 1px solid rgba(80, 100, 180, 40);
     border-radius: 6px;
-    font-size: 15px;
+    font-size: 13px;
 }
 QSpinBox {
     background-color: rgba(16, 16, 40, 200);
     border: 1px solid rgba(80, 100, 180, 40);
     border-radius: 6px;
-    padding: 5px 10px;
+    padding: 4px 8px;
     color: #d4d4e8;
-    font-size: 15px;
-    min-width: 70px;
+    font-size: 13px;
+    min-width: 60px;
 }
 QCheckBox {
-    spacing: 10px;
-    font-size: 15px;
+    spacing: 8px;
+    font-size: 13px;
 }
 QCheckBox::indicator {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 4px;
     border: 1px solid rgba(80, 100, 180, 50);
     background: rgba(16, 16, 40, 200);
@@ -250,22 +315,36 @@ QCheckBox::indicator:checked {
     border-color: #00d4ff;
 }
 QLabel {
-    font-size: 15px;
+    font-size: 13px;
 }
 QLabel#sectionHelper {
     color: #606880;
-    font-size: 13px;
-    padding: 2px 4px;
+    font-size: 12px;
+    padding: 1px 4px;
 }
 QLabel#valueLabel {
     color: #00d4ff;
     font-weight: 700;
-    min-width: 40px;
-    font-size: 15px;
+    min-width: 36px;
+    font-size: 13px;
 }
 QScrollArea {
     border: none;
     background: transparent;
+}
+QProgressBar {
+    background: rgba(16, 16, 40, 200);
+    border: 1px solid rgba(80, 100, 180, 40);
+    border-radius: 6px;
+    height: 18px;
+    text-align: center;
+    color: #d4d4e8;
+    font-size: 11px;
+}
+QProgressBar::chunk {
+    background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
+        stop:0 rgba(0,140,220,180), stop:1 rgba(0,212,255,140));
+    border-radius: 5px;
 }
 """
 
@@ -275,7 +354,7 @@ class CrosshairPreview(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(170, 170)
+        self.setFixedSize(150, 150)
         self._config = {}
         self._renderer = None
 
@@ -291,14 +370,14 @@ class CrosshairPreview(QWidget):
         p.setRenderHint(QPainter.Antialiasing)
         p.setBrush(QColor(8, 8, 22))
         p.setPen(QPen(QColor(50, 60, 100, 60), 1))
-        p.drawRoundedRect(0, 0, 169, 169, 10, 10)
+        p.drawRoundedRect(0, 0, 149, 149, 10, 10)
         pen = QPen(QColor(25, 25, 45), 1)
         p.setPen(pen)
-        for i in range(0, 170, 20):
-            p.drawLine(i, 0, i, 170)
-            p.drawLine(0, i, 170, i)
+        for i in range(0, 150, 20):
+            p.drawLine(i, 0, i, 150)
+            p.drawLine(0, i, 150, i)
         if self._renderer and self._config:
-            self._renderer.draw(p, 85, 85, self._config)
+            self._renderer.draw(p, 75, 75, self._config)
         p.end()
 
 
@@ -317,7 +396,7 @@ class ImportCrosshairDialog(QDialog):
             " border-radius: 8px; padding: 10px; color: #d4d4e8;"
             " font-family: Consolas, monospace; font-size: 13px; }"
             "QPushButton { background: rgba(20,20,48,220); border: 1px solid rgba(80,100,180,40);"
-            " border-radius: 8px; padding: 8px 18px; color: #d4d4e8; font-size: 14px; }"
+            " border-radius: 8px; padding: 8px 18px; color: #d4d4e8; font-size: 13px; }"
             "QPushButton:hover { background: rgba(35,35,72,230); color: #ffffff; }"
             "QPushButton#accent { background: rgba(0,160,210,50);"
             " border: 1px solid rgba(0,212,255,80); color: #00d4ff; font-weight: 700; }"
@@ -331,13 +410,13 @@ class ImportCrosshairDialog(QDialog):
         lay.setSpacing(12)
 
         title = QLabel(t("prof.import_title"))
-        title.setFont(QFont("Segoe UI", 16, QFont.Bold))
+        title.setFont(QFont("Segoe UI", 15, QFont.Bold))
         title.setStyleSheet("color: #00d4ff;")
         lay.addWidget(title)
 
         desc = QLabel(t("prof.import_instruction"))
         desc.setWordWrap(True)
-        desc.setStyleSheet("color: #a0a8c0; font-size: 13px;")
+        desc.setStyleSheet("color: #a0a8c0; font-size: 12px;")
         lay.addWidget(desc)
 
         btn_copy = QPushButton(t("prof.import_copy_btn"))
@@ -347,7 +426,7 @@ class ImportCrosshairDialog(QDialog):
         lay.addWidget(btn_copy)
 
         lbl = QLabel(t("prof.import_paste_hint"))
-        lbl.setStyleSheet("color: #6070a0; font-size: 12px;")
+        lbl.setStyleSheet("color: #6070a0; font-size: 11px;")
         lay.addWidget(lbl)
 
         self.text = QTextEdit()
@@ -401,8 +480,10 @@ class SettingsPanel(QWidget):
 
     config_changed = pyqtSignal()
     profile_changed = pyqtSignal(str)
-    close_app = pyqtSignal()       # full quit signal
-    hide_to_tray = pyqtSignal()    # hide-to-tray signal (X button)
+    close_app = pyqtSignal()
+    hide_to_tray = pyqtSignal()
+
+    W, H = 901, 631
 
     STYLE_KEYS = [
         "cross", "dot", "circle", "chevron", "diamond", "crossdot",
@@ -421,7 +502,7 @@ class SettingsPanel(QWidget):
         self._color = QColor(*config.get("crosshair.color", [0, 255, 0, 255]))
         self._outline_color = QColor(*config.get("crosshair.outline_color", [0, 0, 0, 180]))
         self._theme = config.get("general.theme", "midnight")
-        self._bg_pixmap = None  # cached wallpaper pixmap
+        self._bg_pixmap = None
 
         lang = config.get("general.language", "ru")
         set_language(lang)
@@ -429,7 +510,9 @@ class SettingsPanel(QWidget):
         self.setWindowTitle("CrosshairX")
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setFixedSize(901, 631)
+        self.setFixedSize(self.W, self.H)
+        self.setMinimumSize(self.W, self.H)
+        self.setMaximumSize(self.W, self.H)
         self.setObjectName("settingsPanel")
         self.setStyleSheet(GLASS_STYLE)
         self._drag_pos = None
@@ -438,15 +521,19 @@ class SettingsPanel(QWidget):
         self._load_wallpaper()
 
         self._main_layout = QVBoxLayout(self)
-        self._main_layout.setContentsMargins(16, 8, 16, 12)
-        self._main_layout.setSpacing(8)
+        self._main_layout.setContentsMargins(14, 6, 14, 10)
+        self._main_layout.setSpacing(4)
         self._build_ui()
         self._load_from_config()
 
-    # ── Wallpaper background ──
+        # Monitor auto-refresh timer
+        self._mon_timer = QTimer(self)
+        self._mon_timer.timeout.connect(self._refresh_monitor)
+        self._mon_auto = False
+
+    # -- Wallpaper --
 
     def _load_wallpaper(self):
-        """Load the current theme wallpaper image."""
         img_path = _resource_path(os.path.join("assets", "themes", f"{self._theme}.png"))
         if os.path.exists(img_path):
             self._bg_pixmap = QPixmap(img_path)
@@ -454,15 +541,10 @@ class SettingsPanel(QWidget):
             self._bg_pixmap = None
 
     def paintEvent(self, event):
-        """Draw wallpaper background with rounded corners + subtle overlay."""
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-
-        # Rounded window clip
         path = QPainterPath()
-        path.addRoundedRect(
-            0.0, 0.0, float(self.width()), float(self.height()), 14.0, 14.0
-        )
+        path.addRoundedRect(0.0, 0.0, float(self.width()), float(self.height()), 14.0, 14.0)
         p.setClipPath(path)
 
         if self._bg_pixmap and not self._bg_pixmap.isNull():
@@ -471,11 +553,9 @@ class SettingsPanel(QWidget):
             )
             x = (scaled.width() - self.width()) // 2
             y = (scaled.height() - self.height()) // 2
-            # Draw wallpaper at ~88% opacity for glass translucency
             p.setOpacity(0.88)
             p.drawPixmap(0, 0, scaled, x, y, self.width(), self.height())
             p.setOpacity(1.0)
-            # Very subtle dark overlay (NOT heavy — wallpaper stays visible)
             p.fillRect(self.rect(), QColor(0, 0, 0, 30))
         else:
             grad = QLinearGradient(0, 0, self.width(), self.height())
@@ -483,13 +563,11 @@ class SettingsPanel(QWidget):
             grad.setColorAt(0.5, QColor(12, 12, 38))
             grad.setColorAt(1.0, QColor(8, 14, 30))
             p.fillRect(self.rect(), grad)
-
         p.end()
 
-    # ── UI construction ──
+    # -- UI construction --
 
     def _build_ui(self):
-        """Build entire UI (called on init and language switch)."""
         while self._main_layout.count():
             item = self._main_layout.takeAt(0)
             w = item.widget()
@@ -500,20 +578,18 @@ class SettingsPanel(QWidget):
 
         lay = self._main_layout
 
-        # ── Custom frameless title bar ──
+        # -- Custom frameless title bar --
         title_bar = QHBoxLayout()
-        title_bar.setContentsMargins(12, 4, 4, 0)
-        title_bar.setSpacing(8)
+        title_bar.setContentsMargins(10, 2, 4, 0)
+        title_bar.setSpacing(6)
 
         hdr = QLabel("CrosshairX")
-        hdr.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        hdr.setFont(QFont("Segoe UI", 13, QFont.Bold))
         hdr.setStyleSheet("color: #e0e8ff; background: transparent;")
         title_bar.addWidget(hdr)
 
         sub = QLabel(t("app.subtitle"))
-        sub.setStyleSheet(
-            "color: rgba(160,170,200,140); font-size: 12px; background: transparent;"
-        )
+        sub.setStyleSheet("color: rgba(160,170,200,140); font-size: 11px; background: transparent;")
         title_bar.addWidget(sub)
         title_bar.addStretch()
 
@@ -524,47 +600,48 @@ class SettingsPanel(QWidget):
         if idx >= 0:
             self.combo_lang.setCurrentIndex(idx)
         self.combo_lang.currentIndexChanged.connect(self._on_lang_changed)
-        self.combo_lang.setFixedWidth(62)
-        self.combo_lang.setFixedHeight(26)
+        self.combo_lang.setFixedWidth(58)
+        self.combo_lang.setFixedHeight(24)
         title_bar.addWidget(self.combo_lang)
 
         _btn_tb = (
             "QPushButton { background: transparent; border: none; color: #8090b0;"
-            " font-size: 16px; font-weight: bold; border-radius: 6px; padding: 0 10px; }"
+            " font-size: 15px; font-weight: bold; border-radius: 6px; padding: 0 8px; }"
             "QPushButton:hover { background: rgba(255,255,255,15); color: #e0e8ff; }"
         )
-        btn_min = QPushButton("-")
-        btn_min.setFixedSize(32, 26)
+        btn_min = QPushButton("\u2013")
+        btn_min.setFixedSize(30, 24)
         btn_min.setStyleSheet(_btn_tb)
         btn_min.clicked.connect(self.showMinimized)
         title_bar.addWidget(btn_min)
 
-        btn_close = QPushButton("x")
-        btn_close.setFixedSize(32, 26)
+        btn_close = QPushButton("\u2715")
+        btn_close.setFixedSize(30, 24)
         btn_close.setStyleSheet(
             "QPushButton { background: transparent; border: none; color: #8090b0;"
-            " font-size: 14px; font-weight: bold; border-radius: 6px; padding: 0 10px; }"
+            " font-size: 13px; font-weight: bold; border-radius: 6px; padding: 0 8px; }"
             "QPushButton:hover { background: rgba(255,60,60,60); color: #ff6080; }"
         )
         btn_close.clicked.connect(self.close)
         title_bar.addWidget(btn_close)
 
         title_bar_w = QWidget()
-        title_bar_w.setFixedHeight(40)
+        title_bar_w.setFixedHeight(34)
         title_bar_w.setLayout(title_bar)
         lay.addWidget(title_bar_w)
 
-        # ── Tabs ──
+        # -- Tabs --
         self.tabs = QTabWidget()
         self.tabs.addTab(self._build_crosshair_tab(), t("tab.crosshair"))
         self.tabs.addTab(self._build_animation_tab(), t("tab.animation"))
         self.tabs.addTab(self._build_display_tab(), t("tab.display"))
+        self.tabs.addTab(self._build_monitor_tab(), t("tab.monitor"))
         self.tabs.addTab(self._build_profiles_tab(), t("tab.profiles"))
         lay.addWidget(self.tabs)
 
-        # ── Bottom buttons ──
+        # -- Bottom buttons --
         btn_row = QHBoxLayout()
-        btn_row.setSpacing(8)
+        btn_row.setSpacing(6)
 
         self.btn_apply = QPushButton(t("btn.apply"))
         self.btn_apply.setObjectName("accentBtn")
@@ -585,17 +662,33 @@ class SettingsPanel(QWidget):
         btn_row.addWidget(self.btn_quit)
 
         btn_w = QWidget()
+        btn_w.setFixedHeight(36)
         btn_w.setLayout(btn_row)
         lay.addWidget(btn_w)
 
-    # ── Tab builders ──
+    # ================================================================
+    #                       TAB BUILDERS
+    # ================================================================
+
+    def _make_scroll(self, inner_widget):
+        """Wrap a widget in a transparent QScrollArea."""
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setWidget(inner_widget)
+        return scroll
+
+    # -- Crosshair Tab --
 
     def _build_crosshair_tab(self):
         w = QWidget()
         lay = QVBoxLayout(w)
-        lay.setSpacing(10)
+        lay.setSpacing(6)
+        lay.setContentsMargins(6, 4, 6, 4)
 
         top = QHBoxLayout()
+        top.setSpacing(8)
 
         # Preview
         pg = QGroupBox(t("xhair.preview"))
@@ -605,11 +698,13 @@ class SettingsPanel(QWidget):
         self._preview_renderer = CrosshairRenderer()
         self.preview.set_renderer(self._preview_renderer)
         pl.addWidget(self.preview, alignment=Qt.AlignCenter)
+        pg.setFixedWidth(185)
         top.addWidget(pg)
 
         # Style + color
         sg = QGroupBox(t("xhair.style"))
         sl = QVBoxLayout(sg)
+        sl.setSpacing(6)
 
         self.combo_style = QComboBox()
         for key in self.STYLE_KEYS:
@@ -639,7 +734,11 @@ class SettingsPanel(QWidget):
         # Parameters
         pg2 = QGroupBox(t("xhair.params"))
         g = QGridLayout(pg2)
-        g.setVerticalSpacing(10)
+        g.setVerticalSpacing(7)
+        g.setHorizontalSpacing(8)
+        g.setColumnMinimumWidth(0, 90)
+        g.setColumnStretch(1, 1)
+        g.setColumnMinimumWidth(2, 36)
 
         g.addWidget(QLabel(t("xhair.size")), 0, 0)
         self.slider_size = QSlider(Qt.Horizontal)
@@ -677,6 +776,7 @@ class SettingsPanel(QWidget):
         self.spin_dot_size.setRange(1, 10)
         self.spin_dot_size.valueChanged.connect(self._on_param_changed)
         dr.addWidget(self.spin_dot_size)
+        dr.addStretch()
         g.addLayout(dr, 3, 0, 1, 3)
 
         olr = QHBoxLayout()
@@ -688,19 +788,28 @@ class SettingsPanel(QWidget):
         self.spin_outline.setRange(1, 5)
         self.spin_outline.valueChanged.connect(self._on_param_changed)
         olr.addWidget(self.spin_outline)
+        olr.addStretch()
         g.addLayout(olr, 4, 0, 1, 3)
 
         lay.addWidget(pg2)
-        return w
+        lay.addStretch()
+        return self._make_scroll(w)
+
+    # -- Animation Tab --
 
     def _build_animation_tab(self):
         w = QWidget()
         lay = QVBoxLayout(w)
-        lay.setSpacing(10)
+        lay.setSpacing(6)
+        lay.setContentsMargins(6, 4, 6, 4)
 
         grp = QGroupBox(t("anim.settings"))
         g = QGridLayout(grp)
-        g.setVerticalSpacing(10)
+        g.setVerticalSpacing(7)
+        g.setHorizontalSpacing(8)
+        g.setColumnMinimumWidth(0, 100)
+        g.setColumnStretch(1, 1)
+        g.setColumnMinimumWidth(2, 36)
 
         self.chk_anim = QCheckBox(t("anim.enable"))
         self.chk_anim.stateChanged.connect(self._on_param_changed)
@@ -733,27 +842,43 @@ class SettingsPanel(QWidget):
 
         lay.addWidget(grp)
 
-        # Effect descriptions
-        desc_grp = QGroupBox(t("anim.desc_title"))
-        desc_lay = QVBoxLayout(desc_grp)
+        # -- Collapsible effect descriptions (hidden by default) --
+        self._desc_toggle = QPushButton(t("anim.show_desc"))
+        self._desc_toggle.setObjectName("descToggle")
+        self._desc_toggle.setCursor(Qt.PointingHandCursor)
+        self._desc_toggle.clicked.connect(self._toggle_descriptions)
+        lay.addWidget(self._desc_toggle)
+
+        self._desc_container = QWidget()
+        self._desc_container.setMaximumHeight(0)
+        self._desc_container.setMinimumHeight(0)
+        desc_lay = QVBoxLayout(self._desc_container)
+        desc_lay.setContentsMargins(8, 4, 8, 4)
+        desc_lay.setSpacing(2)
         for dk in ["pulse", "rotate", "breathe", "rainbow", "recoil", "flash", "wave"]:
             lbl = QLabel(t(f"anim.desc.{dk}"))
             lbl.setObjectName("sectionHelper")
+            lbl.setWordWrap(True)
             desc_lay.addWidget(lbl)
-        lay.addWidget(desc_grp)
+        lay.addWidget(self._desc_container)
+
+        self._desc_expanded = False
 
         lay.addStretch()
-        return w
+        return self._make_scroll(w)
+
+    # -- Display Tab --
 
     def _build_display_tab(self):
         w = QWidget()
         lay = QVBoxLayout(w)
-        lay.setSpacing(10)
+        lay.setSpacing(6)
+        lay.setContentsMargins(6, 4, 6, 4)
 
-        # ── Theme / wallpaper selector ──
+        # Theme selector
         theme_grp = QGroupBox(t("disp.theme"))
         theme_lay = QHBoxLayout(theme_grp)
-        theme_lay.setSpacing(8)
+        theme_lay.setSpacing(6)
         self.theme_buttons = {}
         _theme_colors = {
             "midnight": "#0a1432",
@@ -763,7 +888,7 @@ class SettingsPanel(QWidget):
         }
         for key in THEME_KEYS:
             btn = QPushButton(t(f"theme.{key}"))
-            btn.setFixedHeight(38)
+            btn.setFixedHeight(32)
             active = key == self._theme
             btn.setObjectName("themeBtnActive" if active else "themeBtn")
             btn.setStyleSheet(
@@ -775,10 +900,14 @@ class SettingsPanel(QWidget):
             theme_lay.addWidget(btn)
         lay.addWidget(theme_grp)
 
-        # ── Display settings ──
+        # Display settings
         grp = QGroupBox(t("disp.settings"))
         g = QGridLayout(grp)
-        g.setVerticalSpacing(10)
+        g.setVerticalSpacing(7)
+        g.setHorizontalSpacing(8)
+        g.setColumnMinimumWidth(0, 110)
+        g.setColumnStretch(1, 1)
+        g.setColumnMinimumWidth(2, 36)
 
         g.addWidget(QLabel(t("disp.monitor")), 0, 0)
         self.spin_monitor = QSpinBox()
@@ -811,9 +940,10 @@ class SettingsPanel(QWidget):
 
         lay.addWidget(grp)
 
-        # ── Hotkeys ──
+        # Hotkeys
         hk_grp = QGroupBox(t("disp.hotkeys"))
         hk_lay = QVBoxLayout(hk_grp)
+        hk_lay.setSpacing(3)
         hk_data = [
             ("F6",  t("hk.toggle")),
             ("F7",  t("hk.next")),
@@ -825,38 +955,109 @@ class SettingsPanel(QWidget):
             row = QHBoxLayout()
             kl = QLabel(key)
             kl.setStyleSheet(
-                "background: rgba(0, 170, 230, 30); padding: 5px 14px; border-radius: 5px;"
-                "font-weight: bold; color: #00d4ff; min-width: 42px; font-size: 15px;"
+                "background: rgba(0,170,230,30); padding: 3px 10px; border-radius: 5px;"
+                "font-weight: bold; color: #00d4ff; min-width: 32px; font-size: 12px;"
             )
             kl.setAlignment(Qt.AlignCenter)
+            kl.setFixedWidth(44)
             row.addWidget(kl)
             dl = QLabel(f"  {desc}")
-            dl.setStyleSheet("color: #a0a8c0; font-size: 15px;")
+            dl.setStyleSheet("color: #a0a8c0; font-size: 12px;")
             row.addWidget(dl)
             row.addStretch()
             hk_lay.addLayout(row)
         lay.addWidget(hk_grp)
 
         lay.addStretch()
-        return w
+        return self._make_scroll(w)
+
+    # -- Monitor Tab (system resources + detected games) --
+
+    def _build_monitor_tab(self):
+        w = QWidget()
+        lay = QVBoxLayout(w)
+        lay.setSpacing(6)
+        lay.setContentsMargins(6, 4, 6, 4)
+
+        # System Resources
+        sys_grp = QGroupBox(t("mon.system"))
+        sg = QGridLayout(sys_grp)
+        sg.setVerticalSpacing(7)
+        sg.setHorizontalSpacing(8)
+        sg.setColumnMinimumWidth(0, 110)
+        sg.setColumnStretch(1, 1)
+
+        sg.addWidget(QLabel(t("mon.cpu")), 0, 0)
+        self._cpu_bar = QProgressBar()
+        self._cpu_bar.setRange(0, 100)
+        self._cpu_bar.setValue(0)
+        self._cpu_bar.setFormat("0%")
+        sg.addWidget(self._cpu_bar, 0, 1)
+
+        sg.addWidget(QLabel(t("mon.ram")), 1, 0)
+        self._ram_bar = QProgressBar()
+        self._ram_bar.setRange(0, 100)
+        self._ram_bar.setValue(0)
+        self._ram_bar.setFormat("0%")
+        sg.addWidget(self._ram_bar, 1, 1)
+
+        sg.addWidget(QLabel(t("mon.gpu")), 2, 0)
+        self._gpu_bar = QProgressBar()
+        self._gpu_bar.setRange(0, 100)
+        self._gpu_bar.setValue(0)
+        self._gpu_bar.setFormat("N/A")
+        sg.addWidget(self._gpu_bar, 2, 1)
+
+        lay.addWidget(sys_grp)
+
+        # Detected Games
+        game_grp = QGroupBox(t("mon.games"))
+        gl = QVBoxLayout(game_grp)
+        gl.setSpacing(3)
+        self._games_label = QLabel(t("mon.no_games"))
+        self._games_label.setWordWrap(True)
+        self._games_label.setStyleSheet("color: #a0a8c0; font-size: 12px; padding: 4px;")
+        gl.addWidget(self._games_label)
+        lay.addWidget(game_grp)
+
+        # Controls
+        ctrl = QHBoxLayout()
+        ctrl.setSpacing(8)
+        btn_refresh = QPushButton(t("mon.refresh"))
+        btn_refresh.setObjectName("accentBtn")
+        btn_refresh.clicked.connect(self._refresh_monitor)
+        ctrl.addWidget(btn_refresh)
+
+        self._chk_auto_refresh = QCheckBox(t("mon.auto_refresh"))
+        self._chk_auto_refresh.stateChanged.connect(self._toggle_monitor_auto)
+        ctrl.addWidget(self._chk_auto_refresh)
+        ctrl.addStretch()
+        lay.addLayout(ctrl)
+
+        lay.addStretch()
+        return self._make_scroll(w)
+
+    # -- Profiles Tab --
 
     def _build_profiles_tab(self):
         w = QWidget()
         lay = QVBoxLayout(w)
-        lay.setSpacing(10)
+        lay.setSpacing(6)
+        lay.setContentsMargins(6, 4, 6, 4)
 
         grp = QGroupBox(t("prof.title"))
         gl = QVBoxLayout(grp)
+        gl.setSpacing(5)
 
         sr = QHBoxLayout()
         sr.addWidget(QLabel(t("prof.profile")))
         self.combo_profile = QComboBox()
         self._refresh_profiles()
-        sr.addWidget(self.combo_profile)
+        sr.addWidget(self.combo_profile, 1)
         gl.addLayout(sr)
 
         bg = QGridLayout()
-        bg.setSpacing(8)
+        bg.setSpacing(5)
         bl = QPushButton(t("prof.load"))
         bl.clicked.connect(self._load_profile)
         bg.addWidget(bl, 0, 0)
@@ -873,9 +1074,10 @@ class SettingsPanel(QWidget):
         gl.addLayout(bg)
         lay.addWidget(grp)
 
-        # ── Import from AI ──
+        # Import from AI
         ig = QGroupBox(t("prof.import_title"))
         il = QVBoxLayout(ig)
+        il.setSpacing(4)
         import_hint = QLabel(t("prof.import_hint"))
         import_hint.setObjectName("sectionHelper")
         import_hint.setWordWrap(True)
@@ -889,8 +1091,10 @@ class SettingsPanel(QWidget):
         # Presets
         pg = QGroupBox(t("prof.presets"))
         pl = QVBoxLayout(pg)
+        pl.setSpacing(3)
         hint = QLabel(t("prof.presets_hint"))
         hint.setObjectName("sectionHelper")
+        hint.setWordWrap(True)
         pl.addWidget(hint)
         from .config import PRESET_PROFILES
         for key, profile in PRESET_PROFILES.items():
@@ -899,9 +1103,11 @@ class SettingsPanel(QWidget):
             pl.addWidget(btn)
         lay.addWidget(pg)
         lay.addStretch()
-        return w
+        return self._make_scroll(w)
 
-    # ── Helpers ──
+    # ================================================================
+    #                         HELPERS
+    # ================================================================
 
     @staticmethod
     def _clear_layout(layout):
@@ -914,7 +1120,6 @@ class SettingsPanel(QWidget):
                 SettingsPanel._clear_layout(item.layout())
 
     def _update_theme_buttons(self):
-        """Highlight active theme button."""
         _theme_colors = {
             "midnight": "#0a1432",
             "purple":   "#1c0828",
@@ -928,18 +1133,17 @@ class SettingsPanel(QWidget):
                 btn.setStyleSheet(
                     f"QPushButton {{ background: {_theme_colors[key]};"
                     f"border: 1px solid rgba(80,100,180,40); border-radius: 8px;"
-                    f"color: #a0a8c0; font-size: 13px; padding: 6px 10px; }}"
+                    f"color: #a0a8c0; font-size: 12px; padding: 5px 8px; }}"
                     f"QPushButton:hover {{ border-color: #00d4ff; color: #d0d8f0; }}"
                 )
             else:
                 btn.setStyleSheet(
                     f"QPushButton {{ background: rgba(0,160,220,30);"
                     f"border: 2px solid rgba(0,212,255,200); border-radius: 8px;"
-                    f"color: #00d4ff; font-weight: 700; font-size: 13px; padding: 6px 10px; }}"
+                    f"color: #00d4ff; font-weight: 700; font-size: 12px; padding: 5px 8px; }}"
                 )
 
     def _set_theme(self, theme_key):
-        """Change wallpaper theme."""
         self._theme = theme_key
         self.config.set("general.theme", theme_key)
         self.config.save()
@@ -947,7 +1151,9 @@ class SettingsPanel(QWidget):
         self._update_theme_buttons()
         self.update()
 
-    # ── Event handlers ──
+    # ================================================================
+    #                      EVENT HANDLERS
+    # ================================================================
 
     def _on_lang_changed(self, _=None):
         lang = self.combo_lang.currentData()
@@ -998,6 +1204,99 @@ class SettingsPanel(QWidget):
             f"min-width: 28px; min-height: 28px; }}"
         )
 
+    def _toggle_descriptions(self):
+        """Smooth collapsible toggle for effect descriptions."""
+        if not self._desc_expanded:
+            # Measure natural height
+            self._desc_container.setMaximumHeight(16777215)
+            target_h = self._desc_container.sizeHint().height()
+            self._desc_container.setMaximumHeight(0)
+            anim = QPropertyAnimation(self._desc_container, b"maximumHeight", self)
+            anim.setDuration(300)
+            anim.setEasingCurve(QEasingCurve.InOutCubic)
+            anim.setStartValue(0)
+            anim.setEndValue(target_h)
+            anim.start(QPropertyAnimation.DeleteWhenStopped)
+            self._desc_toggle.setText(t("anim.hide_desc"))
+            self._desc_expanded = True
+        else:
+            anim = QPropertyAnimation(self._desc_container, b"maximumHeight", self)
+            anim.setDuration(300)
+            anim.setEasingCurve(QEasingCurve.InOutCubic)
+            anim.setStartValue(self._desc_container.height())
+            anim.setEndValue(0)
+            anim.start(QPropertyAnimation.DeleteWhenStopped)
+            self._desc_toggle.setText(t("anim.show_desc"))
+            self._desc_expanded = False
+
+    def _toggle_monitor_auto(self, state):
+        if state == Qt.Checked:
+            self._mon_auto = True
+            self._mon_timer.start(3000)
+            self._refresh_monitor()
+        else:
+            self._mon_auto = False
+            self._mon_timer.stop()
+
+    def _refresh_monitor(self):
+        """Update system resource bars and detected games list."""
+        try:
+            import psutil
+
+            cpu_pct = psutil.cpu_percent(interval=0)
+            self._cpu_bar.setValue(int(cpu_pct))
+            self._cpu_bar.setFormat(f"{cpu_pct:.0f}%")
+
+            mem = psutil.virtual_memory()
+            ram_pct = mem.percent
+            used_gb = mem.used / (1024 ** 3)
+            total_gb = mem.total / (1024 ** 3)
+            self._ram_bar.setValue(int(ram_pct))
+            self._ram_bar.setFormat(f"{ram_pct:.0f}%  ({used_gb:.1f}/{total_gb:.1f} GB)")
+
+            game_list = []
+            for proc in psutil.process_iter(['name']):
+                try:
+                    name = proc.info['name']
+                    if name in KNOWN_GAMES:
+                        game_list.append(f"  {KNOWN_GAMES[name]}  ({name})")
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+
+            if game_list:
+                self._games_label.setText("\n".join(sorted(set(game_list))))
+                self._games_label.setStyleSheet("color: #80e0a0; font-size: 12px; padding: 4px;")
+            else:
+                self._games_label.setText(t("mon.no_games"))
+                self._games_label.setStyleSheet("color: #a0a8c0; font-size: 12px; padding: 4px;")
+        except ImportError:
+            self._cpu_bar.setFormat("N/A")
+            self._ram_bar.setFormat("N/A")
+            self._games_label.setText(t("mon.no_psutil"))
+
+        # GPU via nvidia-smi
+        try:
+            result = subprocess.run(
+                ["nvidia-smi", "--query-gpu=utilization.gpu",
+                 "--format=csv,noheader,nounits"],
+                capture_output=True, text=True, timeout=2,
+                creationflags=0x08000000,  # CREATE_NO_WINDOW
+            )
+            if result.returncode == 0:
+                gpu_pct = float(result.stdout.strip().split('\n')[0])
+                self._gpu_bar.setValue(int(gpu_pct))
+                self._gpu_bar.setFormat(f"{gpu_pct:.0f}%")
+            else:
+                self._gpu_bar.setValue(0)
+                self._gpu_bar.setFormat("N/A")
+        except Exception:
+            self._gpu_bar.setValue(0)
+            self._gpu_bar.setFormat("N/A")
+
+    # ================================================================
+    #                    APPLY / RESET / CONFIG
+    # ================================================================
+
     def _apply_settings(self):
         c = self.config
         c.set("crosshair.style", self.combo_style.currentData())
@@ -1043,7 +1342,6 @@ class SettingsPanel(QWidget):
         self.btn_hide.setText(t("btn.hide") if visible else t("btn.show"))
 
     def _quit_app(self):
-        """Full quit — kills overlay and process."""
         self.config.save()
         self.close_app.emit()
         os._exit(0)
@@ -1088,7 +1386,9 @@ class SettingsPanel(QWidget):
         self._load_wallpaper()
         self._on_param_changed()
 
-    # ── Profile management ──
+    # ================================================================
+    #                      PROFILE MANAGEMENT
+    # ================================================================
 
     def _refresh_profiles(self):
         self.combo_profile.clear()
@@ -1131,22 +1431,38 @@ class SettingsPanel(QWidget):
             self.overlay.refresh_config()
             self.profile_changed.emit(preset_name)
 
-    # ── Window events ──
+    # ================================================================
+    #                       WINDOW EVENTS
+    # ================================================================
 
     def showEvent(self, event):
-        """Apply acrylic blur on first show."""
         super().showEvent(event)
-        if sys.platform == "win32" and not self._acrylic_done:
+        if sys.platform == "win32":
             try:
                 hwnd = int(self.winId())
-                _enable_acrylic(hwnd)
-                self._acrylic_done = True
+                if not self._acrylic_done:
+                    _enable_acrylic(hwnd)
+                    self._acrylic_done = True
+                # Remove WS_MAXIMIZEBOX to prevent Aero Snap maximize
+                GWL_STYLE = -16
+                WS_MAXIMIZEBOX = 0x00010000
+                style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_STYLE)
+                style &= ~WS_MAXIMIZEBOX
+                ctypes.windll.user32.SetWindowLongW(hwnd, GWL_STYLE, style)
             except Exception:
                 pass
 
+    def changeEvent(self, event):
+        """Prevent window from being maximized by Aero Snap (drag bug fix)."""
+        super().changeEvent(event)
+        from PyQt5.QtCore import QEvent
+        if event.type() == QEvent.WindowStateChange:
+            if self.windowState() & Qt.WindowMaximized:
+                self.setWindowState(Qt.WindowNoState)
+                QTimer.singleShot(0, lambda: self.setFixedSize(self.W, self.H))
+
     def mousePressEvent(self, event):
-        """Allow dragging from the title bar area (top 44px)."""
-        if event.button() == Qt.LeftButton and event.pos().y() <= 44:
+        if event.button() == Qt.LeftButton and event.pos().y() <= 38:
             self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()
             event.accept()
         else:
@@ -1160,19 +1476,22 @@ class SettingsPanel(QWidget):
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        self._drag_pos = None
+        if self._drag_pos is not None:
+            self._drag_pos = None
+            # Re-enforce fixed size after drag (Aero Snap prevention)
+            self.setFixedSize(self.W, self.H)
         super().mouseReleaseEvent(event)
 
     def closeEvent(self, event):
-        """X button = hide to tray (app keeps running, crosshair stays)."""
         event.ignore()
         self.hide()
         self.hide_to_tray.emit()
 
-    # ── Import crosshair from AI ──
+    # ================================================================
+    #                   IMPORT CROSSHAIR FROM AI
+    # ================================================================
 
     def _open_import_dialog(self):
-        """Open the crosshair import dialog."""
         dlg = ImportCrosshairDialog(self)
         if dlg.exec_() == QDialog.Accepted and dlg.result_config:
             cfg = dlg.result_config

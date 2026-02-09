@@ -26,6 +26,7 @@ _STRINGS = {
     "tab.crosshair": {"ru": "Прицел", "en": "Crosshair"},
     "tab.animation": {"ru": "Анимация", "en": "Animation"},
     "tab.display": {"ru": "Экран", "en": "Display"},
+    "tab.monitor": {"ru": "Монитор", "en": "Monitor"},
     "tab.profiles": {"ru": "Профили", "en": "Profiles"},
 
     # ---- Crosshair tab ----
@@ -74,6 +75,8 @@ _STRINGS = {
 
     # ---- Animation descriptions ----
     "anim.desc_title": {"ru": "Описание эффектов", "en": "Effect descriptions"},
+    "anim.show_desc": {"ru": "Показать описания эффектов", "en": "Show effect descriptions"},
+    "anim.hide_desc": {"ru": "Скрыть описания", "en": "Hide descriptions"},
     "anim.desc.pulse":   {"ru": "Пульсация — плавное увеличение / уменьшение", "en": "Pulse — smooth grow / shrink"},
     "anim.desc.rotate":  {"ru": "Вращение — медленное вращение прицела", "en": "Rotate — slow rotation"},
     "anim.desc.breathe": {"ru": "Дыхание — появление / исчезание", "en": "Breathe — fade in / out"},
@@ -105,6 +108,18 @@ _STRINGS = {
     "hk.prev":     {"ru": "Предыдущий профиль",       "en": "Previous profile"},
     "hk.anim":     {"ru": "Вкл / выкл анимацию",      "en": "Toggle animation"},
     "hk.settings": {"ru": "Открыть настройки",        "en": "Open settings"},
+
+    # ---- Game Monitor tab ----
+    "mon.system": {"ru": "Системные ресурсы", "en": "System Resources"},
+    "mon.cpu": {"ru": "Процессор (CPU):", "en": "CPU:"},
+    "mon.ram": {"ru": "Память (RAM):", "en": "RAM:"},
+    "mon.gpu": {"ru": "Видеокарта (GPU):", "en": "GPU:"},
+    "mon.games": {"ru": "Обнаруженные игры", "en": "Detected Games"},
+    "mon.no_games": {"ru": "Игры не обнаружены", "en": "No games detected"},
+    "mon.refresh": {"ru": "Обновить", "en": "Refresh"},
+    "mon.auto_refresh": {"ru": "Автообновление (3 сек)", "en": "Auto-refresh (3 sec)"},
+    "mon.no_psutil": {"ru": "Установите psutil для мониторинга", "en": "Install psutil for monitoring"},
+    "mon.process": {"ru": "Процесс", "en": "Process"},
 
     # ---- Profiles tab ----
     "prof.title": {"ru": "Профили прицелов", "en": "Crosshair Profiles"},
@@ -141,7 +156,9 @@ _STRINGS = {
               "(ChatGPT, Claude, etc.). Then paste the returned JSON here.",
     },
     "prof.import_format": {
-        "ru": ("Сгенерируй конфигурацию прицела для CrosshairX в формате JSON.\n\n"
+        "ru": ("Сгенерируй УНИКАЛЬНУЮ и КРЕАТИВНУЮ конфигурацию прицела для CrosshairX в формате JSON.\n"
+               "ВАЖНО: придумай необычный и оригинальный прицел, которого НЕТ в стандартных пресетах.\n"
+               "Используй нестандартные комбинации цветов, размеров и стилей.\n\n"
                "Поля:\n"
                '- "style": одно из ["cross","dot","circle","chevron","diamond",'
                '"crossdot","triangle","crosshair_classic","square","plus_thin",'
@@ -149,17 +166,19 @@ _STRINGS = {
                '- "size": число 4-100\n'
                '- "thickness": число 1-10\n'
                '- "gap": число 0-30\n'
-               '- "color": [R,G,B,A] (0-255)\n'
+               '- "color": [R,G,B,A] (0-255) — используй яркие необычные цвета\n'
                '- "dot": true/false\n'
                '- "dot_size": число 1-10\n'
                '- "outline": true/false\n'
                '- "outline_thickness": число 1-5\n'
                '- "t_style": true/false\n\n'
-               "Верни ТОЛЬКО JSON.\n"
-               'Пример: {"style":"cross","size":24,"thickness":2,"gap":5,'
-               '"color":[0,255,128,255],"dot":true,"dot_size":2,'
-               '"outline":true,"outline_thickness":1,"t_style":false}'),
-        "en": ("Generate a crosshair config for CrosshairX in JSON.\n\n"
+               "Верни ТОЛЬКО JSON, без пояснений.\n"
+               'Пример: {"style":"chevron","size":32,"thickness":3,"gap":8,'
+               '"color":[255,100,50,230],"dot":true,"dot_size":3,'
+               '"outline":true,"outline_thickness":2,"t_style":true}'),
+        "en": ("Generate a UNIQUE and CREATIVE crosshair config for CrosshairX in JSON.\n"
+               "IMPORTANT: create an original crosshair NOT found in standard presets.\n"
+               "Use unusual color combos, sizes, and style combinations.\n\n"
                "Fields:\n"
                '- "style": one of ["cross","dot","circle","chevron","diamond",'
                '"crossdot","triangle","crosshair_classic","square","plus_thin",'
@@ -167,16 +186,16 @@ _STRINGS = {
                '- "size": 4-100\n'
                '- "thickness": 1-10\n'
                '- "gap": 0-30\n'
-               '- "color": [R,G,B,A] (0-255)\n'
+               '- "color": [R,G,B,A] (0-255) — use bright unusual colors\n'
                '- "dot": true/false\n'
                '- "dot_size": 1-10\n'
                '- "outline": true/false\n'
                '- "outline_thickness": 1-5\n'
                '- "t_style": true/false\n\n'
-               "Return ONLY JSON.\n"
-               'Example: {"style":"cross","size":24,"thickness":2,"gap":5,'
-               '"color":[0,255,128,255],"dot":true,"dot_size":2,'
-               '"outline":true,"outline_thickness":1,"t_style":false}'),
+               "Return ONLY JSON, no explanations.\n"
+               'Example: {"style":"chevron","size":32,"thickness":3,"gap":8,'
+               '"color":[255,100,50,230],"dot":true,"dot_size":3,'
+               '"outline":true,"outline_thickness":2,"t_style":true}'),
     },
     "prof.import_copy_btn": {"ru": "Копировать инструкцию", "en": "Copy instruction"},
     "prof.import_paste_hint": {"ru": "Вставьте JSON конфигурацию:", "en": "Paste JSON config:"},
