@@ -51,6 +51,10 @@ _STRINGS = {
     "style.crossdot": {"ru": "⊕ Крест+Точка", "en": "⊕ Cross+Dot"},
     "style.triangle": {"ru": "△ Треугольник", "en": "△ Triangle"},
     "style.crosshair_classic": {"ru": "⊕ Классический", "en": "⊕ Classic"},
+    "style.square": {"ru": "□ Квадрат", "en": "□ Square"},
+    "style.plus_thin": {"ru": "+ Тонкий крест", "en": "+ Thin Plus"},
+    "style.crosscircle": {"ru": "⦾ Крест+Круг", "en": "⦾ Cross+Circle"},
+    "style.arrows": {"ru": "➔ Стрелки", "en": "➔ Arrows"},
 
     # ---- Animation tab ----
     "anim.settings": {"ru": "Анимация", "en": "Animation"},

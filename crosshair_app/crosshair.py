@@ -21,6 +21,10 @@ class CrosshairRenderer:
             "crossdot": self._draw_crossdot,
             "triangle": self._draw_triangle,
             "crosshair_classic": self._draw_classic,
+            "square": self._draw_square,
+            "plus_thin": self._draw_plus_thin,
+            "crosscircle": self._draw_crosscircle,
+            "arrows": self._draw_arrows,
         }
 
     def draw(self, painter: QPainter, center_x: float, center_y: float, config: dict,
@@ -228,6 +232,102 @@ class CrosshairRenderer:
         painter.drawLine(QPointF(cx + half, cy), QPointF(cx + half + ext, cy))
         painter.drawLine(QPointF(cx, cy - half - ext), QPointF(cx, cy - half))
         painter.drawLine(QPointF(cx, cy + half), QPointF(cx, cy + half + ext))
+
+        if dot and dot_size > 0:
+            painter.setBrush(QBrush(color))
+            painter.setPen(QPen(color, 1))
+            painter.drawEllipse(QPointF(cx, cy), dot_size, dot_size)
+
+    def _draw_square(self, painter, cx, cy, size, thickness, gap, color, dot, dot_size, t_style):
+        """Square/box crosshair."""
+        pen = QPen(color, thickness)
+        pen.setJoinStyle(0x00)  # MiterJoin
+        painter.setPen(pen)
+        painter.setBrush(QBrush())
+        half = size / 2
+        painter.drawRect(QRectF(cx - half, cy - half, size, size))
+
+        if dot and dot_size > 0:
+            painter.setBrush(QBrush(color))
+            painter.setPen(QPen(color, 1))
+            painter.drawEllipse(QPointF(cx, cy), dot_size, dot_size)
+
+    def _draw_plus_thin(self, painter, cx, cy, size, thickness, gap, color, dot, dot_size, t_style):
+        """Thin plus — full lines through center, no gap."""
+        pen = QPen(color, max(1, thickness * 0.6))
+        pen.setCapStyle(0x10)  # SquareCap
+        painter.setPen(pen)
+        half = size / 2
+        painter.drawLine(QPointF(cx - half, cy), QPointF(cx + half, cy))
+        if not t_style:
+            painter.drawLine(QPointF(cx, cy - half), QPointF(cx, cy + half))
+        else:
+            painter.drawLine(QPointF(cx, cy), QPointF(cx, cy + half))
+
+        if dot and dot_size > 0:
+            painter.setBrush(QBrush(color))
+            painter.setPen(QPen(color, 1))
+            painter.drawEllipse(QPointF(cx, cy), dot_size, dot_size)
+
+    def _draw_crosscircle(self, painter, cx, cy, size, thickness, gap, color, dot, dot_size, t_style):
+        """Cross inside a circle."""
+        pen = QPen(color, thickness)
+        painter.setPen(pen)
+        painter.setBrush(QBrush())
+        radius = size / 2
+        painter.drawEllipse(QPointF(cx, cy), radius, radius)
+
+        # Draw cross lines inside with gap
+        pen.setCapStyle(0x10)
+        painter.setPen(pen)
+        painter.drawLine(QPointF(cx + gap, cy), QPointF(cx + radius * 0.7, cy))
+        painter.drawLine(QPointF(cx - gap, cy), QPointF(cx - radius * 0.7, cy))
+        painter.drawLine(QPointF(cx, cy + gap), QPointF(cx, cy + radius * 0.7))
+        if not t_style:
+            painter.drawLine(QPointF(cx, cy - gap), QPointF(cx, cy - radius * 0.7))
+
+        if dot and dot_size > 0:
+            painter.setBrush(QBrush(color))
+            painter.setPen(QPen(color, 1))
+            painter.drawEllipse(QPointF(cx, cy), dot_size, dot_size)
+
+    def _draw_arrows(self, painter, cx, cy, size, thickness, gap, color, dot, dot_size, t_style):
+        """Four small arrows pointing inward toward center."""
+        pen = QPen(color, thickness)
+        pen.setCapStyle(0x20)  # RoundCap
+        pen.setJoinStyle(0x80)  # RoundJoin
+        painter.setPen(pen)
+        half = size / 2
+        arrow_len = half * 0.35
+
+        # Right arrow pointing left
+        tip_x = cx + gap
+        base_x = cx + half
+        painter.drawLine(QPointF(base_x, cy), QPointF(tip_x, cy))
+        painter.drawLine(QPointF(tip_x, cy), QPointF(tip_x + arrow_len, cy - arrow_len))
+        painter.drawLine(QPointF(tip_x, cy), QPointF(tip_x + arrow_len, cy + arrow_len))
+
+        # Left arrow pointing right
+        tip_x = cx - gap
+        base_x = cx - half
+        painter.drawLine(QPointF(base_x, cy), QPointF(tip_x, cy))
+        painter.drawLine(QPointF(tip_x, cy), QPointF(tip_x - arrow_len, cy - arrow_len))
+        painter.drawLine(QPointF(tip_x, cy), QPointF(tip_x - arrow_len, cy + arrow_len))
+
+        # Bottom arrow pointing up
+        tip_y = cy + gap
+        base_y = cy + half
+        painter.drawLine(QPointF(cx, base_y), QPointF(cx, tip_y))
+        painter.drawLine(QPointF(cx, tip_y), QPointF(cx - arrow_len, tip_y + arrow_len))
+        painter.drawLine(QPointF(cx, tip_y), QPointF(cx + arrow_len, tip_y + arrow_len))
+
+        # Top arrow pointing down
+        if not t_style:
+            tip_y = cy - gap
+            base_y = cy - half
+            painter.drawLine(QPointF(cx, base_y), QPointF(cx, tip_y))
+            painter.drawLine(QPointF(cx, tip_y), QPointF(cx - arrow_len, tip_y - arrow_len))
+            painter.drawLine(QPointF(cx, tip_y), QPointF(cx + arrow_len, tip_y - arrow_len))
 
         if dot and dot_size > 0:
             painter.setBrush(QBrush(color))

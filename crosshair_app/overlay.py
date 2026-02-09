@@ -130,6 +130,14 @@ class OverlayWindow(QWidget):
         else:
             self.hide()
 
+    def shutdown(self):
+        """Completely stop overlay — timer, visibility, widget. For app quit."""
+        self._visible = False
+        self._timer.stop()
+        self.hide()
+        self.close()
+        self.deleteLater()
+
     def refresh_config(self):
         """Reload config and recalculate geometry + timer."""
         self._update_geometry()

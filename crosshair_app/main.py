@@ -138,10 +138,21 @@ class CrosshairXApp:
         set_language(self.config.get("general.language", "ru"))
 
         # Create desktop shortcut on first launch (EXE only)
-        if not self.config.get("general.shortcut_created", False):
-            if create_desktop_shortcut():
-                self.config.set("general.shortcut_created", True)
-                self.config.save()
+        # Always check if shortcut file exists (user may have deleted it)
+        if getattr(sys, 'frozen', False):
+            try:
+                import winreg
+                key = winreg.OpenKey(
+                    winreg.HKEY_CURRENT_USER,
+                    r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+                )
+                desktop = winreg.QueryValueEx(key, "Desktop")[0]
+                winreg.CloseKey(key)
+            except Exception:
+                desktop = os.path.join(os.path.expanduser("~"), "Desktop")
+            shortcut_path = os.path.join(desktop, "CrosshairX.lnk")
+            if not os.path.exists(shortcut_path):
+                create_desktop_shortcut()
 
         # Create overlay (starts hidden — no crosshair until user applies)
         self.overlay = OverlayWindow(self.config)
@@ -281,11 +292,14 @@ class CrosshairXApp:
     def quit(self):
         """Quit the application completely — releases all file locks."""
         self.config.save()
-        self.overlay.hide()
-        self.overlay.close()
-        self._hotkey_timer.stop()
-        self._timer_cleanup = True
+        # Stop hotkey polling
+        if hasattr(self, '_hotkey_timer'):
+            self._hotkey_timer.stop()
+        # Completely destroy overlay (stops timer, hides, deletes widget)
+        self.overlay.shutdown()
         self.tray.hide()
+        self.settings.close()
+        self.settings.deleteLater()
         self.app.quit()
 
     def run(self) -> int:

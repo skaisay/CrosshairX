@@ -160,7 +160,8 @@ class SettingsPanel(QWidget):
     close_app = pyqtSignal()
 
     # Style keys (display names come from i18n)
-    STYLE_KEYS = ["cross", "dot", "circle", "chevron", "diamond", "crossdot", "triangle", "crosshair_classic"]
+    STYLE_KEYS = ["cross", "dot", "circle", "chevron", "diamond", "crossdot",
+                  "triangle", "crosshair_classic", "square", "plus_thin", "crosscircle", "arrows"]
     ANIM_KEYS = ["none", "pulse", "rotate", "breathe", "rainbow", "recoil", "flash", "wave"]
 
     def __init__(self, config, overlay, parent=None):
