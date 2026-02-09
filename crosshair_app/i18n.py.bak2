@@ -1,7 +1,7 @@
 """
 Localization system for CrosshairX.
 Supports Russian (ru) and English (en).
-Plain text labels — no emojis, no Unicode symbols.
+All emojis removed — clean modern labels.
 """
 
 _STRINGS = {
@@ -12,7 +12,7 @@ _STRINGS = {
 
     # ---- Tray ----
     "tray.settings": {"ru": "Настройки", "en": "Settings"},
-    "tray.toggle": {"ru": "Показать / скрыть", "en": "Show / Hide"},
+    "tray.toggle": {"ru": "Показать/скрыть", "en": "Show/Hide"},
     "tray.animation": {"ru": "Анимация", "en": "Animation"},
     "tray.profiles": {"ru": "Профили", "en": "Profiles"},
     "tray.quit": {"ru": "Выход", "en": "Quit"},
@@ -43,47 +43,47 @@ _STRINGS = {
     "xhair.outline_thick": {"ru": "Толщина:", "en": "Thickness:"},
     "xhair.pick_color": {"ru": "Выберите цвет прицела", "en": "Choose crosshair color"},
 
-    # ---- Styles (plain text) ----
-    "style.cross":             {"ru": "Крест",          "en": "Cross"},
-    "style.dot":               {"ru": "Точка",          "en": "Dot"},
-    "style.circle":            {"ru": "Круг",           "en": "Circle"},
-    "style.chevron":           {"ru": "Шеврон",         "en": "Chevron"},
-    "style.diamond":           {"ru": "Ромб",           "en": "Diamond"},
-    "style.crossdot":          {"ru": "Крест+Точка",    "en": "Cross+Dot"},
-    "style.triangle":          {"ru": "Треугольник",    "en": "Triangle"},
-    "style.crosshair_classic": {"ru": "Классический",   "en": "Classic"},
-    "style.square":            {"ru": "Квадрат",        "en": "Square"},
-    "style.plus_thin":         {"ru": "Тонкий крест",   "en": "Thin Plus"},
-    "style.crosscircle":       {"ru": "Крест+Круг",     "en": "Cross+Circle"},
-    "style.arrows":            {"ru": "Стрелки",        "en": "Arrows"},
+    # ---- Styles (colored dots instead of emojis) ----
+    "style.cross": {"ru": "Крест", "en": "Cross"},
+    "style.dot": {"ru": "Точка", "en": "Dot"},
+    "style.circle": {"ru": "Круг", "en": "Circle"},
+    "style.chevron": {"ru": "Шеврон", "en": "Chevron"},
+    "style.diamond": {"ru": "Ромб", "en": "Diamond"},
+    "style.crossdot": {"ru": "Крест+Точка", "en": "Cross+Dot"},
+    "style.triangle": {"ru": "Треугольник", "en": "Triangle"},
+    "style.crosshair_classic": {"ru": "Классический", "en": "Classic"},
+    "style.square": {"ru": "Квадрат", "en": "Square"},
+    "style.plus_thin": {"ru": "Тонкий крест", "en": "Thin Plus"},
+    "style.crosscircle": {"ru": "Крест+Круг", "en": "Cross+Circle"},
+    "style.arrows": {"ru": "Стрелки", "en": "Arrows"},
 
     # ---- Animation tab ----
-    "anim.settings": {"ru": "Настройки анимации", "en": "Animation Settings"},
+    "anim.settings": {"ru": "Анимация", "en": "Animation"},
     "anim.enable": {"ru": "Включить анимацию", "en": "Enable animation"},
     "anim.type": {"ru": "Тип:", "en": "Type:"},
     "anim.speed": {"ru": "Скорость:", "en": "Speed:"},
     "anim.intensity": {"ru": "Интенсивность:", "en": "Intensity:"},
-    "anim.none":    {"ru": "Нет",         "en": "None"},
-    "anim.pulse":   {"ru": "Пульсация",   "en": "Pulse"},
-    "anim.rotate":  {"ru": "Вращение",    "en": "Rotate"},
-    "anim.breathe": {"ru": "Дыхание",     "en": "Breathe"},
-    "anim.rainbow": {"ru": "Радуга",      "en": "Rainbow"},
-    "anim.recoil":  {"ru": "Отдача",      "en": "Recoil"},
-    "anim.flash":   {"ru": "Вспышка",     "en": "Flash"},
-    "anim.wave":    {"ru": "Волна",       "en": "Wave"},
+    "anim.none": {"ru": "Нет", "en": "None"},
+    "anim.pulse": {"ru": "Пульсация", "en": "Pulse"},
+    "anim.rotate": {"ru": "Вращение", "en": "Rotate"},
+    "anim.breathe": {"ru": "Дыхание", "en": "Breathe"},
+    "anim.rainbow": {"ru": "Радуга", "en": "Rainbow"},
+    "anim.recoil": {"ru": "Отдача", "en": "Recoil"},
+    "anim.flash": {"ru": "Вспышка", "en": "Flash"},
+    "anim.wave": {"ru": "Волна", "en": "Wave"},
 
     # ---- Animation descriptions ----
     "anim.desc_title": {"ru": "Описание эффектов", "en": "Effect descriptions"},
-    "anim.desc.pulse":   {"ru": "Пульсация — плавное увеличение / уменьшение", "en": "Pulse — smooth grow / shrink"},
-    "anim.desc.rotate":  {"ru": "Вращение — медленное вращение прицела", "en": "Rotate — slow rotation"},
-    "anim.desc.breathe": {"ru": "Дыхание — появление / исчезание", "en": "Breathe — fade in / out"},
+    "anim.desc.pulse": {"ru": "Пульсация — плавное увеличение/уменьшение", "en": "Pulse — smooth grow/shrink"},
+    "anim.desc.rotate": {"ru": "Вращение — медленное вращение", "en": "Rotate — slow rotation"},
+    "anim.desc.breathe": {"ru": "Дыхание — появление/исчезание", "en": "Breathe — fade in/out"},
     "anim.desc.rainbow": {"ru": "Радуга — переливание цветов", "en": "Rainbow — color cycling"},
-    "anim.desc.recoil":  {"ru": "Отдача — имитация отдачи оружия", "en": "Recoil — weapon recoil sim"},
-    "anim.desc.flash":   {"ru": "Вспышка — периодические вспышки", "en": "Flash — periodic flash"},
-    "anim.desc.wave":    {"ru": "Волна — волнообразное движение", "en": "Wave — wave movement"},
+    "anim.desc.recoil": {"ru": "Отдача — имитация отдачи", "en": "Recoil — weapon recoil sim"},
+    "anim.desc.flash": {"ru": "Вспышка — периодические вспышки", "en": "Flash — periodic flash"},
+    "anim.desc.wave": {"ru": "Волна — волнообразное движение", "en": "Wave — wave movement"},
 
     # ---- Display tab ----
-    "disp.settings": {"ru": "Настройки экрана", "en": "Display Settings"},
+    "disp.settings": {"ru": "Экран", "en": "Display"},
     "disp.theme": {"ru": "Тема оформления", "en": "App Theme"},
     "disp.monitor": {"ru": "Монитор:", "en": "Monitor:"},
     "disp.offset_x": {"ru": "Смещение X:", "en": "Offset X:"},
@@ -94,38 +94,38 @@ _STRINGS = {
     "disp.language": {"ru": "Язык / Language:", "en": "Language / Язык:"},
 
     # ---- Themes ----
-    "theme.midnight": {"ru": "Полночь",  "en": "Midnight"},
-    "theme.purple":   {"ru": "Фиолет",   "en": "Purple"},
-    "theme.ocean":    {"ru": "Океан",     "en": "Ocean"},
-    "theme.sakura":   {"ru": "Сакура",    "en": "Sakura"},
+    "theme.midnight": {"ru": "Полночь", "en": "Midnight"},
+    "theme.purple": {"ru": "Фиолет", "en": "Purple"},
+    "theme.ocean": {"ru": "Океан", "en": "Ocean"},
+    "theme.sakura": {"ru": "Сакура", "en": "Sakura"},
 
     # ---- Hotkey descriptions ----
-    "hk.toggle":   {"ru": "Показать / скрыть прицел", "en": "Toggle crosshair"},
-    "hk.next":     {"ru": "Следующий профиль",        "en": "Next profile"},
-    "hk.prev":     {"ru": "Предыдущий профиль",       "en": "Previous profile"},
-    "hk.anim":     {"ru": "Вкл / выкл анимацию",      "en": "Toggle animation"},
-    "hk.settings": {"ru": "Открыть настройки",        "en": "Open settings"},
+    "hk.toggle": {"ru": "Показать / скрыть прицел", "en": "Toggle crosshair"},
+    "hk.next": {"ru": "Следующий профиль", "en": "Next profile"},
+    "hk.prev": {"ru": "Предыдущий профиль", "en": "Previous profile"},
+    "hk.anim": {"ru": "Вкл / выкл анимацию", "en": "Toggle animation"},
+    "hk.settings": {"ru": "Открыть настройки", "en": "Open settings"},
 
     # ---- Profiles tab ----
     "prof.title": {"ru": "Профили прицелов", "en": "Crosshair Profiles"},
     "prof.profile": {"ru": "Профиль:", "en": "Profile:"},
-    "prof.load":    {"ru": "Загрузить", "en": "Load"},
-    "prof.save":    {"ru": "Сохранить", "en": "Save"},
-    "prof.delete":  {"ru": "Удалить",   "en": "Delete"},
-    "prof.refresh": {"ru": "Обновить",  "en": "Refresh"},
+    "prof.load": {"ru": "Загрузить", "en": "Load"},
+    "prof.save": {"ru": "Сохранить", "en": "Save"},
+    "prof.delete": {"ru": "Удалить", "en": "Delete"},
+    "prof.refresh": {"ru": "Обновить", "en": "Refresh"},
     "prof.presets": {"ru": "Готовые пресеты", "en": "Presets"},
     "prof.presets_hint": {"ru": "Выберите готовый пресет для быстрой настройки", "en": "Pick a preset for quick setup"},
-    "prof.save_title":  {"ru": "Сохранить профиль", "en": "Save Profile"},
-    "prof.save_prompt": {"ru": "Имя профиля:",      "en": "Profile name:"},
-    "prof.del_title":   {"ru": "Удалить профиль",    "en": "Delete Profile"},
+    "prof.save_title": {"ru": "Сохранить профиль", "en": "Save Profile"},
+    "prof.save_prompt": {"ru": "Имя профиля:", "en": "Profile name:"},
+    "prof.del_title": {"ru": "Удалить профиль", "en": "Delete Profile"},
     "prof.del_confirm": {"ru": "Удалить профиль '{name}'?", "en": "Delete profile '{name}'?"},
 
     # ---- Buttons ----
-    "btn.apply": {"ru": "Применить",       "en": "Apply"},
-    "btn.reset": {"ru": "Сброс",           "en": "Reset"},
-    "btn.hide":  {"ru": "Скрыть прицел",   "en": "Hide crosshair"},
-    "btn.show":  {"ru": "Показать прицел",  "en": "Show crosshair"},
-    "btn.quit":  {"ru": "Выход",            "en": "Quit"},
+    "btn.apply": {"ru": "Применить", "en": "Apply"},
+    "btn.reset": {"ru": "Сброс", "en": "Reset"},
+    "btn.hide": {"ru": "Скрыть прицел", "en": "Hide crosshair"},
+    "btn.show": {"ru": "Показать прицел", "en": "Show crosshair"},
+    "btn.quit": {"ru": "Выход", "en": "Quit"},
 }
 
 _current_lang = "ru"

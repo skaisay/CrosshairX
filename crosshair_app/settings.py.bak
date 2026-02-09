@@ -1,237 +1,132 @@
 """
 Settings panel GUI for CrosshairX.
-Modern glassmorphism + wallpaper background, bilingual (RU/EN).
-
-Window behavior:
-  Close    (X)  = hide to tray, app keeps running
-  Minimize (—)  = minimize to taskbar (native Qt)
-  Выход button  = FULL QUIT — kills overlay + process
-  Tray Quit     = FULL QUIT — kills overlay + process
+Minimalist, dark-themed, bilingual (RU/EN) settings window.
 """
 
-import os
-import sys
-
-from PyQt5.QtCore import Qt, pyqtSignal, QRect
-from PyQt5.QtGui import (
-    QColor, QFont, QPainter, QPen, QBrush,
-    QLinearGradient, QPixmap, QImage
-)
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QColor, QFont, QPainter, QPen, QBrush
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QComboBox,
     QPushButton, QGroupBox, QCheckBox, QColorDialog, QSpinBox,
-    QTabWidget, QGridLayout, QMessageBox, QInputDialog, QScrollArea
+    QTabWidget, QGridLayout, QMessageBox, QInputDialog
 )
 
 from .i18n import t, set_language, get_language
 
-
-def _resource_path(relative: str) -> str:
-    """Absolute path to bundled resource (works in dev + PyInstaller)."""
-    if getattr(sys, 'frozen', False):
-        base = sys._MEIPASS
-    else:
-        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base, relative)
-
-
-# ── Theme wallpaper paths ──
-THEME_KEYS = ["midnight", "purple", "ocean", "sakura"]
-
-# ── Glassmorphism stylesheet (bigger fonts) ──
-GLASS_STYLE = """
+# ── Compact dark stylesheet ──
+DARK_STYLE = """
 QWidget {
-    color: #e8e8f0;
+    background-color: #111120;
+    color: #d0d0d0;
     font-family: 'Segoe UI', sans-serif;
-    font-size: 15px;
-    background: transparent;
-}
-QTabWidget::pane {
-    background: rgba(10, 10, 28, 170);
-    border: 1px solid rgba(100, 120, 200, 30);
-    border-radius: 10px;
-}
-QTabBar::tab {
-    background: rgba(18, 18, 42, 180);
-    color: #8888a8;
-    padding: 10px 26px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    margin-right: 2px;
-    font-weight: 500;
-    font-size: 15px;
-}
-QTabBar::tab:selected {
-    background: rgba(25, 25, 55, 220);
-    color: #00d4ff;
-    font-weight: 700;
-}
-QTabBar::tab:hover {
-    background: rgba(30, 30, 65, 200);
-    color: #c0c0d8;
+    font-size: 12px;
 }
 QGroupBox {
-    background-color: rgba(12, 12, 30, 160);
-    border: 1px solid rgba(80, 100, 180, 35);
-    border-radius: 12px;
-    margin-top: 18px;
-    padding: 22px 16px 16px 16px;
-    font-weight: 700;
-    font-size: 15px;
-    color: #00d4ff;
+    border: 1px solid #1e1e3a;
+    border-radius: 6px;
+    margin-top: 10px;
+    padding-top: 14px;
+    font-weight: bold;
+    color: #00c8ff;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
-    left: 16px;
-    padding: 0 8px;
-    color: #00d4ff;
-    font-size: 15px;
+    left: 10px;
+    padding: 0 4px;
 }
 QPushButton {
-    background-color: rgba(20, 20, 48, 200);
-    border: 1px solid rgba(80, 100, 180, 40);
-    border-radius: 8px;
-    padding: 8px 18px;
-    color: #d4d4e8;
-    font-weight: 500;
-    font-size: 15px;
+    background-color: #1a1a35;
+    border: 1px solid #2a2a50;
+    border-radius: 5px;
+    padding: 5px 12px;
+    color: #d0d0d0;
 }
 QPushButton:hover {
-    background-color: rgba(35, 35, 72, 220);
-    border-color: rgba(0, 212, 255, 100);
-    color: #ffffff;
+    background-color: #25254a;
+    border-color: #00c8ff;
 }
 QPushButton:pressed {
-    background-color: rgba(55, 28, 110, 200);
+    background-color: #3a1a6a;
 }
 QPushButton#colorBtn {
-    border: 2px solid #00d4ff;
-    border-radius: 14px;
-    min-width: 28px;
-    min-height: 28px;
-}
-QPushButton#accentBtn {
-    background-color: rgba(0, 160, 210, 40);
-    border: 1px solid rgba(0, 212, 255, 80);
-    color: #00d4ff;
-    font-weight: 700;
-    font-size: 15px;
-}
-QPushButton#accentBtn:hover {
-    background-color: rgba(0, 190, 245, 60);
-    border-color: rgba(0, 212, 255, 160);
-    color: #ffffff;
-}
-QPushButton#dangerBtn {
-    background-color: rgba(55, 16, 26, 200);
-    border: 1px solid rgba(200, 50, 80, 50);
-    color: #ff5070;
-    font-weight: 600;
-}
-QPushButton#dangerBtn:hover {
-    background-color: rgba(80, 22, 38, 220);
-    border-color: rgba(255, 60, 90, 120);
-    color: #ff6888;
-}
-QPushButton#themeBtn {
-    padding: 6px 10px;
-    font-size: 13px;
-    border-radius: 8px;
-}
-QPushButton#themeBtnActive {
-    padding: 6px 10px;
-    font-size: 13px;
-    border-radius: 8px;
-    border: 2px solid rgba(0, 212, 255, 200);
-    background: rgba(0, 160, 220, 30);
-    color: #00d4ff;
-    font-weight: 700;
+    border: 2px solid #00c8ff;
+    border-radius: 12px;
+    min-width: 24px; min-height: 24px;
 }
 QSlider::groove:horizontal {
-    height: 5px;
-    background: rgba(28, 28, 55, 200);
+    height: 4px;
+    background: #1a1a35;
     border-radius: 2px;
 }
 QSlider::handle:horizontal {
-    background: #00d4ff;
-    width: 16px;
-    height: 16px;
-    margin: -6px 0;
-    border-radius: 8px;
+    background: #00c8ff;
+    width: 14px; height: 14px;
+    margin: -5px 0;
+    border-radius: 7px;
 }
 QSlider::sub-page:horizontal {
-    background: rgba(0, 170, 230, 100);
+    background: #1a3a60;
     border-radius: 2px;
 }
 QComboBox {
-    background-color: rgba(16, 16, 40, 200);
-    border: 1px solid rgba(80, 100, 180, 40);
-    border-radius: 8px;
-    padding: 6px 12px;
-    color: #d4d4e8;
-    font-size: 15px;
-    min-width: 120px;
+    background-color: #1a1a35;
+    border: 1px solid #2a2a50;
+    border-radius: 5px;
+    padding: 3px 6px;
+    color: #d0d0d0;
 }
 QComboBox::drop-down { border: none; }
 QComboBox QAbstractItemView {
-    background-color: rgba(16, 16, 40, 245);
-    color: #d4d4e8;
-    selection-background-color: rgba(0, 170, 230, 60);
-    border: 1px solid rgba(80, 100, 180, 40);
-    border-radius: 6px;
-    font-size: 15px;
+    background-color: #1a1a35;
+    color: #d0d0d0;
+    selection-background-color: #25254a;
 }
 QSpinBox {
-    background-color: rgba(16, 16, 40, 200);
-    border: 1px solid rgba(80, 100, 180, 40);
-    border-radius: 6px;
-    padding: 5px 10px;
-    color: #d4d4e8;
-    font-size: 15px;
-    min-width: 70px;
-}
-QCheckBox {
-    spacing: 10px;
-    font-size: 15px;
+    background-color: #1a1a35;
+    border: 1px solid #2a2a50;
+    border-radius: 4px;
+    padding: 2px 4px;
+    color: #d0d0d0;
 }
 QCheckBox::indicator {
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    border: 1px solid rgba(80, 100, 180, 50);
-    background: rgba(16, 16, 40, 200);
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    border: 1px solid #2a2a50;
+    background: #1a1a35;
 }
 QCheckBox::indicator:checked {
-    background: #00d4ff;
-    border-color: #00d4ff;
+    background: #00c8ff;
+    border-color: #00c8ff;
 }
-QLabel {
-    font-size: 15px;
+QTabWidget::pane {
+    border: 1px solid #1e1e3a;
+    border-radius: 6px;
+    background: #111120;
 }
-QLabel#sectionHelper {
-    color: #606880;
-    font-size: 13px;
-    padding: 2px 4px;
+QTabBar::tab {
+    background: #1a1a35;
+    color: #d0d0d0;
+    padding: 6px 14px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    margin-right: 1px;
 }
-QLabel#valueLabel {
-    color: #00d4ff;
-    font-weight: 700;
-    min-width: 40px;
-    font-size: 15px;
+QTabBar::tab:selected {
+    background: #25254a;
+    color: #00c8ff;
 }
-QScrollArea {
-    border: none;
-    background: transparent;
+QTabBar::tab:hover {
+    background: #25254a;
 }
 """
 
 
 class CrosshairPreview(QWidget):
-    """Live preview of the crosshair."""
+    """Compact live preview of the crosshair."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(170, 170)
+        self.setFixedSize(160, 160)
         self._config = {}
         self._renderer = None
 
@@ -245,42 +140,29 @@ class CrosshairPreview(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-        p.setBrush(QColor(8, 8, 22))
-        p.setPen(QPen(QColor(50, 60, 100, 60), 1))
-        p.drawRoundedRect(0, 0, 169, 169, 10, 10)
-        pen = QPen(QColor(25, 25, 45), 1)
+        p.fillRect(self.rect(), QColor(20, 20, 35))
+        # Subtle grid
+        pen = QPen(QColor(35, 35, 55), 1)
         p.setPen(pen)
-        for i in range(0, 170, 20):
-            p.drawLine(i, 0, i, 170)
-            p.drawLine(0, i, 170, i)
+        for i in range(0, 160, 20):
+            p.drawLine(i, 0, i, 160)
+            p.drawLine(0, i, 160, i)
         if self._renderer and self._config:
-            self._renderer.draw(p, 85, 85, self._config)
+            self._renderer.draw(p, 80, 80, self._config)
         p.end()
 
 
 class SettingsPanel(QWidget):
-    """Glassmorphism settings panel with wallpaper backgrounds.
-
-    Window behavior:
-      Close (X)  = hide to tray, app keeps running
-      Minimize   = minimize to taskbar (native)
-      btn_quit   = FULL QUIT (os._exit)
-    """
+    """Minimalist settings panel with RU/EN language support."""
 
     config_changed = pyqtSignal()
     profile_changed = pyqtSignal(str)
-    close_app = pyqtSignal()       # full quit signal
-    hide_to_tray = pyqtSignal()    # hide-to-tray signal (X button)
+    close_app = pyqtSignal()
 
-    STYLE_KEYS = [
-        "cross", "dot", "circle", "chevron", "diamond", "crossdot",
-        "triangle", "crosshair_classic", "square", "plus_thin",
-        "crosscircle", "arrows",
-    ]
-    ANIM_KEYS = [
-        "none", "pulse", "rotate", "breathe", "rainbow",
-        "recoil", "flash", "wave",
-    ]
+    # Style keys (display names come from i18n)
+    STYLE_KEYS = ["cross", "dot", "circle", "chevron", "diamond", "crossdot",
+                  "triangle", "crosshair_classic", "square", "plus_thin", "crosscircle", "arrows"]
+    ANIM_KEYS = ["none", "pulse", "rotate", "breathe", "rainbow", "recoil", "flash", "wave"]
 
     def __init__(self, config, overlay, parent=None):
         super().__init__(parent)
@@ -288,66 +170,29 @@ class SettingsPanel(QWidget):
         self.overlay = overlay
         self._color = QColor(*config.get("crosshair.color", [0, 255, 0, 255]))
         self._outline_color = QColor(*config.get("crosshair.outline_color", [0, 0, 0, 180]))
-        self._theme = config.get("general.theme", "midnight")
-        self._bg_pixmap = None  # cached wallpaper pixmap
 
+        # Set language from config
         lang = config.get("general.language", "ru")
         set_language(lang)
 
-        self.setWindowTitle("CrosshairX")
-        self.setWindowFlags(Qt.Window)
-        self.setFixedSize(700, 900)
-        self.setObjectName("settingsPanel")
-        self.setStyleSheet(GLASS_STYLE)
-
-        self._load_wallpaper()
+        self.setWindowTitle(t("app.title"))
+        self.setWindowFlags(
+            Qt.WindowStaysOnTopHint
+            | Qt.WindowCloseButtonHint
+            | Qt.WindowMinimizeButtonHint
+        )
+        self.setFixedSize(480, 600)
+        self.setStyleSheet(DARK_STYLE)
 
         self._main_layout = QVBoxLayout(self)
-        self._main_layout.setContentsMargins(22, 22, 22, 16)
-        self._main_layout.setSpacing(12)
+        self._main_layout.setContentsMargins(10, 10, 10, 10)
+        self._main_layout.setSpacing(6)
         self._build_ui()
         self._load_from_config()
 
-    # ── Wallpaper background ──
-
-    def _load_wallpaper(self):
-        """Load the current theme wallpaper image."""
-        img_path = _resource_path(os.path.join("assets", "themes", f"{self._theme}.png"))
-        if os.path.exists(img_path):
-            self._bg_pixmap = QPixmap(img_path)
-        else:
-            self._bg_pixmap = None
-
-    def paintEvent(self, event):
-        """Draw wallpaper background + dark overlay for readability."""
-        p = QPainter(self)
-        p.setRenderHint(QPainter.Antialiasing)
-
-        if self._bg_pixmap and not self._bg_pixmap.isNull():
-            # Scale wallpaper to fill window
-            scaled = self._bg_pixmap.scaled(
-                self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
-            )
-            # Center-crop
-            x = (scaled.width() - self.width()) // 2
-            y = (scaled.height() - self.height()) // 2
-            p.drawPixmap(0, 0, scaled, x, y, self.width(), self.height())
-            # Dark frosted glass overlay for readability
-            p.fillRect(self.rect(), QColor(0, 0, 0, 120))
-        else:
-            # Fallback gradient
-            grad = QLinearGradient(0, 0, self.width(), self.height())
-            grad.setColorAt(0.0, QColor(8, 8, 28))
-            grad.setColorAt(0.5, QColor(12, 12, 38))
-            grad.setColorAt(1.0, QColor(8, 14, 30))
-            p.fillRect(self.rect(), grad)
-
-        p.end()
-
-    # ── UI construction ──
-
     def _build_ui(self):
-        """Build entire UI (called on init and language switch)."""
+        """Build entire UI (called on init and on language switch)."""
+        # Clear existing widgets
         while self._main_layout.count():
             item = self._main_layout.takeAt(0)
             w = item.widget()
@@ -358,35 +203,32 @@ class SettingsPanel(QWidget):
 
         lay = self._main_layout
 
-        # ── Header: title + lang ──
-        header = QHBoxLayout()
-        title_col = QVBoxLayout()
-        title_col.setSpacing(2)
-
-        hdr = QLabel("CrosshairX")
-        hdr.setFont(QFont("Segoe UI", 20, QFont.Bold))
-        hdr.setStyleSheet("color: #00d4ff; background: transparent;")
-        title_col.addWidget(hdr)
-
-        sub = QLabel(t("app.subtitle"))
-        sub.setStyleSheet("color: #5a6080; font-size: 12px; background: transparent;")
-        title_col.addWidget(sub)
-        header.addLayout(title_col)
-        header.addStretch()
+        # ── Header row: title + language switch ──
+        header_row = QHBoxLayout()
+        hdr = QLabel(t("app.title"))
+        hdr.setFont(QFont("Segoe UI", 16, QFont.Bold))
+        hdr.setStyleSheet("color: #00c8ff;")
+        header_row.addWidget(hdr)
+        header_row.addStretch()
 
         self.combo_lang = QComboBox()
-        self.combo_lang.addItem("RU", "ru")
-        self.combo_lang.addItem("EN", "en")
+        self.combo_lang.addItem("Русский", "ru")
+        self.combo_lang.addItem("English", "en")
         idx = self.combo_lang.findData(get_language())
         if idx >= 0:
             self.combo_lang.setCurrentIndex(idx)
         self.combo_lang.currentIndexChanged.connect(self._on_lang_changed)
-        self.combo_lang.setFixedWidth(65)
-        header.addWidget(self.combo_lang)
+        self.combo_lang.setFixedWidth(90)
+        header_row.addWidget(self.combo_lang)
 
         header_w = QWidget()
-        header_w.setLayout(header)
+        header_w.setLayout(header_row)
         lay.addWidget(header_w)
+
+        sub = QLabel(t("app.subtitle"))
+        sub.setStyleSheet("color: #666; font-size: 10px;")
+        sub.setAlignment(Qt.AlignCenter)
+        lay.addWidget(sub)
 
         # ── Tabs ──
         self.tabs = QTabWidget()
@@ -398,10 +240,7 @@ class SettingsPanel(QWidget):
 
         # ── Bottom buttons ──
         btn_row = QHBoxLayout()
-        btn_row.setSpacing(10)
-
         self.btn_apply = QPushButton(t("btn.apply"))
-        self.btn_apply.setObjectName("accentBtn")
         self.btn_apply.clicked.connect(self._apply_settings)
         btn_row.addWidget(self.btn_apply)
 
@@ -409,12 +248,15 @@ class SettingsPanel(QWidget):
         self.btn_reset.clicked.connect(self._reset_defaults)
         btn_row.addWidget(self.btn_reset)
 
-        self.btn_hide = QPushButton(t("btn.show"))
+        self.btn_hide = QPushButton(t("btn.show"))  # Starts as Show since overlay is hidden
         self.btn_hide.clicked.connect(self._toggle_overlay)
         btn_row.addWidget(self.btn_hide)
 
         self.btn_quit = QPushButton(t("btn.quit"))
-        self.btn_quit.setObjectName("dangerBtn")
+        self.btn_quit.setStyleSheet(
+            "QPushButton { background-color: #3a1020; border-color: #802040; color: #ff4060; }"
+            "QPushButton:hover { background-color: #501030; border-color: #ff4060; }"
+        )
         self.btn_quit.clicked.connect(self._quit_app)
         btn_row.addWidget(self.btn_quit)
 
@@ -427,7 +269,7 @@ class SettingsPanel(QWidget):
     def _build_crosshair_tab(self):
         w = QWidget()
         lay = QVBoxLayout(w)
-        lay.setSpacing(10)
+        lay.setSpacing(6)
 
         top = QHBoxLayout()
 
@@ -438,7 +280,7 @@ class SettingsPanel(QWidget):
         from .crosshair import CrosshairRenderer
         self._preview_renderer = CrosshairRenderer()
         self.preview.set_renderer(self._preview_renderer)
-        pl.addWidget(self.preview, alignment=Qt.AlignCenter)
+        pl.addWidget(self.preview)
         top.addWidget(pg)
 
         # Style + color
@@ -473,7 +315,6 @@ class SettingsPanel(QWidget):
         # Parameters
         pg2 = QGroupBox(t("xhair.params"))
         g = QGridLayout(pg2)
-        g.setVerticalSpacing(10)
 
         g.addWidget(QLabel(t("xhair.size")), 0, 0)
         self.slider_size = QSlider(Qt.Horizontal)
@@ -481,7 +322,7 @@ class SettingsPanel(QWidget):
         self.slider_size.valueChanged.connect(self._on_param_changed)
         g.addWidget(self.slider_size, 0, 1)
         self.lbl_size = QLabel("20")
-        self.lbl_size.setObjectName("valueLabel")
+        self.lbl_size.setMinimumWidth(26)
         g.addWidget(self.lbl_size, 0, 2)
 
         g.addWidget(QLabel(t("xhair.thickness")), 1, 0)
@@ -490,7 +331,7 @@ class SettingsPanel(QWidget):
         self.slider_thickness.valueChanged.connect(self._on_param_changed)
         g.addWidget(self.slider_thickness, 1, 1)
         self.lbl_thickness = QLabel("2")
-        self.lbl_thickness.setObjectName("valueLabel")
+        self.lbl_thickness.setMinimumWidth(26)
         g.addWidget(self.lbl_thickness, 1, 2)
 
         g.addWidget(QLabel(t("xhair.gap")), 2, 0)
@@ -499,7 +340,7 @@ class SettingsPanel(QWidget):
         self.slider_gap.valueChanged.connect(self._on_param_changed)
         g.addWidget(self.slider_gap, 2, 1)
         self.lbl_gap = QLabel("4")
-        self.lbl_gap.setObjectName("valueLabel")
+        self.lbl_gap.setMinimumWidth(26)
         g.addWidget(self.lbl_gap, 2, 2)
 
         dr = QHBoxLayout()
@@ -530,11 +371,9 @@ class SettingsPanel(QWidget):
     def _build_animation_tab(self):
         w = QWidget()
         lay = QVBoxLayout(w)
-        lay.setSpacing(10)
 
         grp = QGroupBox(t("anim.settings"))
         g = QGridLayout(grp)
-        g.setVerticalSpacing(10)
 
         self.chk_anim = QCheckBox(t("anim.enable"))
         self.chk_anim.stateChanged.connect(self._on_param_changed)
@@ -553,7 +392,6 @@ class SettingsPanel(QWidget):
         self.slider_anim_speed.valueChanged.connect(self._on_param_changed)
         g.addWidget(self.slider_anim_speed, 2, 1)
         self.lbl_anim_speed = QLabel("1.0")
-        self.lbl_anim_speed.setObjectName("valueLabel")
         g.addWidget(self.lbl_anim_speed, 2, 2)
 
         g.addWidget(QLabel(t("anim.intensity")), 3, 0)
@@ -562,19 +400,16 @@ class SettingsPanel(QWidget):
         self.slider_anim_intensity.valueChanged.connect(self._on_param_changed)
         g.addWidget(self.slider_anim_intensity, 3, 1)
         self.lbl_anim_intensity = QLabel("30%")
-        self.lbl_anim_intensity.setObjectName("valueLabel")
         g.addWidget(self.lbl_anim_intensity, 3, 2)
 
         lay.addWidget(grp)
 
-        # Effect descriptions
-        desc_grp = QGroupBox(t("anim.desc_title"))
-        desc_lay = QVBoxLayout(desc_grp)
-        for dk in ["pulse", "rotate", "breathe", "rainbow", "recoil", "flash", "wave"]:
+        # Descriptions
+        desc_keys = ["pulse", "rotate", "breathe", "rainbow", "recoil", "flash", "wave"]
+        for dk in desc_keys:
             lbl = QLabel(t(f"anim.desc.{dk}"))
-            lbl.setObjectName("sectionHelper")
-            desc_lay.addWidget(lbl)
-        lay.addWidget(desc_grp)
+            lbl.setStyleSheet("color: #888; font-size: 10px; padding: 0 8px;")
+            lay.addWidget(lbl)
 
         lay.addStretch()
         return w
@@ -582,37 +417,9 @@ class SettingsPanel(QWidget):
     def _build_display_tab(self):
         w = QWidget()
         lay = QVBoxLayout(w)
-        lay.setSpacing(10)
 
-        # ── Theme / wallpaper selector ──
-        theme_grp = QGroupBox(t("disp.theme"))
-        theme_lay = QHBoxLayout(theme_grp)
-        theme_lay.setSpacing(8)
-        self.theme_buttons = {}
-        _theme_colors = {
-            "midnight": "#0a1432",
-            "purple":   "#1c0828",
-            "ocean":    "#061840",
-            "sakura":   "#28081c",
-        }
-        for key in THEME_KEYS:
-            btn = QPushButton(t(f"theme.{key}"))
-            btn.setFixedHeight(38)
-            active = key == self._theme
-            btn.setObjectName("themeBtnActive" if active else "themeBtn")
-            btn.setStyleSheet(
-                f"QPushButton {{ background: {_theme_colors[key]}; }}"
-                if not active else ""
-            )
-            btn.clicked.connect(lambda checked, k=key: self._set_theme(k))
-            self.theme_buttons[key] = btn
-            theme_lay.addWidget(btn)
-        lay.addWidget(theme_grp)
-
-        # ── Display settings ──
         grp = QGroupBox(t("disp.settings"))
         g = QGridLayout(grp)
-        g.setVerticalSpacing(10)
 
         g.addWidget(QLabel(t("disp.monitor")), 0, 0)
         self.spin_monitor = QSpinBox()
@@ -635,7 +442,6 @@ class SettingsPanel(QWidget):
         self.slider_opacity.valueChanged.connect(self._on_param_changed)
         g.addWidget(self.slider_opacity, 3, 1)
         self.lbl_opacity = QLabel("100%")
-        self.lbl_opacity.setObjectName("valueLabel")
         g.addWidget(self.lbl_opacity, 3, 2)
 
         g.addWidget(QLabel(t("disp.fps")), 4, 0)
@@ -645,28 +451,26 @@ class SettingsPanel(QWidget):
 
         lay.addWidget(grp)
 
-        # ── Hotkeys ──
+        # Hotkeys
         hk_grp = QGroupBox(t("disp.hotkeys"))
         hk_lay = QVBoxLayout(hk_grp)
         hk_data = [
-            ("F6",  t("hk.toggle")),
-            ("F7",  t("hk.next")),
-            ("F8",  t("hk.prev")),
-            ("F9",  t("hk.anim")),
+            ("F6", t("hk.toggle")),
+            ("F7", t("hk.next")),
+            ("F8", t("hk.prev")),
+            ("F9", t("hk.anim")),
             ("F10", t("hk.settings")),
         ]
         for key, desc in hk_data:
             row = QHBoxLayout()
             kl = QLabel(key)
             kl.setStyleSheet(
-                "background: rgba(0, 170, 230, 30); padding: 5px 14px; border-radius: 5px;"
-                "font-weight: bold; color: #00d4ff; min-width: 42px; font-size: 15px;"
+                "background: #1a3a60; padding: 3px 8px; border-radius: 3px;"
+                "font-weight: bold; color: #00c8ff; min-width: 36px;"
             )
             kl.setAlignment(Qt.AlignCenter)
             row.addWidget(kl)
-            dl = QLabel(f"  {desc}")
-            dl.setStyleSheet("color: #a0a8c0; font-size: 15px;")
-            row.addWidget(dl)
+            row.addWidget(QLabel(f" — {desc}"))
             row.addStretch()
             hk_lay.addLayout(row)
         lay.addWidget(hk_grp)
@@ -677,7 +481,6 @@ class SettingsPanel(QWidget):
     def _build_profiles_tab(self):
         w = QWidget()
         lay = QVBoxLayout(w)
-        lay.setSpacing(10)
 
         grp = QGroupBox(t("prof.title"))
         gl = QVBoxLayout(grp)
@@ -690,7 +493,6 @@ class SettingsPanel(QWidget):
         gl.addLayout(sr)
 
         bg = QGridLayout()
-        bg.setSpacing(8)
         bl = QPushButton(t("prof.load"))
         bl.clicked.connect(self._load_profile)
         bg.addWidget(bl, 0, 0)
@@ -698,7 +500,6 @@ class SettingsPanel(QWidget):
         bs.clicked.connect(self._save_profile)
         bg.addWidget(bs, 0, 1)
         bd = QPushButton(t("prof.delete"))
-        bd.setObjectName("dangerBtn")
         bd.clicked.connect(self._delete_profile)
         bg.addWidget(bd, 1, 0)
         br = QPushButton(t("prof.refresh"))
@@ -710,15 +511,13 @@ class SettingsPanel(QWidget):
         # Presets
         pg = QGroupBox(t("prof.presets"))
         pl = QVBoxLayout(pg)
-        hint = QLabel(t("prof.presets_hint"))
-        hint.setObjectName("sectionHelper")
-        pl.addWidget(hint)
         from .config import PRESET_PROFILES
         for key, profile in PRESET_PROFILES.items():
-            btn = QPushButton(profile['name'])
+            btn = QPushButton(f"🎯 {profile['name']}")
             btn.clicked.connect(lambda checked, k=key: self._apply_preset(k))
             pl.addWidget(btn)
         lay.addWidget(pg)
+
         lay.addStretch()
         return w
 
@@ -734,43 +533,10 @@ class SettingsPanel(QWidget):
             elif item.layout():
                 SettingsPanel._clear_layout(item.layout())
 
-    def _update_theme_buttons(self):
-        """Highlight active theme button."""
-        _theme_colors = {
-            "midnight": "#0a1432",
-            "purple":   "#1c0828",
-            "ocean":    "#061840",
-            "sakura":   "#28081c",
-        }
-        for key, btn in self.theme_buttons.items():
-            active = key == self._theme
-            btn.setObjectName("themeBtnActive" if active else "themeBtn")
-            if not active:
-                btn.setStyleSheet(
-                    f"QPushButton {{ background: {_theme_colors[key]};"
-                    f"border: 1px solid rgba(80,100,180,40); border-radius: 8px;"
-                    f"color: #a0a8c0; font-size: 13px; padding: 6px 10px; }}"
-                    f"QPushButton:hover {{ border-color: #00d4ff; color: #d0d8f0; }}"
-                )
-            else:
-                btn.setStyleSheet(
-                    f"QPushButton {{ background: rgba(0,160,220,30);"
-                    f"border: 2px solid rgba(0,212,255,200); border-radius: 8px;"
-                    f"color: #00d4ff; font-weight: 700; font-size: 13px; padding: 6px 10px; }}"
-                )
-
-    def _set_theme(self, theme_key):
-        """Change wallpaper theme."""
-        self._theme = theme_key
-        self.config.set("general.theme", theme_key)
-        self.config.save()
-        self._load_wallpaper()
-        self._update_theme_buttons()
-        self.update()
-
     # ── Event handlers ──
 
     def _on_lang_changed(self, _=None):
+        """Switch language and rebuild UI."""
         lang = self.combo_lang.currentData()
         set_language(lang)
         self.config.set("general.language", lang)
@@ -779,6 +545,7 @@ class SettingsPanel(QWidget):
         self._load_from_config()
 
     def _on_param_changed(self, _=None):
+        """Update labels and preview on any parameter change."""
         self.lbl_size.setText(str(self.slider_size.value()))
         self.lbl_thickness.setText(str(self.slider_thickness.value()))
         self.lbl_gap.setText(str(self.slider_gap.value()))
@@ -791,8 +558,7 @@ class SettingsPanel(QWidget):
             "size": self.slider_size.value(),
             "thickness": self.slider_thickness.value(),
             "gap": self.slider_gap.value(),
-            "color": [self._color.red(), self._color.green(),
-                      self._color.blue(), self._color.alpha()],
+            "color": [self._color.red(), self._color.green(), self._color.blue(), self._color.alpha()],
             "outline": self.chk_outline.isChecked(),
             "outline_color": [self._outline_color.red(), self._outline_color.green(),
                               self._outline_color.blue(), self._outline_color.alpha()],
@@ -815,8 +581,8 @@ class SettingsPanel(QWidget):
     def _update_color_button(self):
         self.btn_color.setStyleSheet(
             f"QPushButton#colorBtn {{ background-color: {self._color.name()}; "
-            f"border: 2px solid #00d4ff; border-radius: 14px; "
-            f"min-width: 28px; min-height: 28px; }}"
+            f"border: 2px solid #00c8ff; border-radius: 12px; "
+            f"min-width: 24px; min-height: 24px; }}"
         )
 
     def _apply_settings(self):
@@ -826,7 +592,7 @@ class SettingsPanel(QWidget):
         c.set("crosshair.thickness", self.slider_thickness.value())
         c.set("crosshair.gap", self.slider_gap.value())
         c.set("crosshair.color", [self._color.red(), self._color.green(),
-                                   self._color.blue(), self._color.alpha()])
+                                    self._color.blue(), self._color.alpha()])
         c.set("crosshair.outline", self.chk_outline.isChecked())
         c.set("crosshair.outline_thickness", self.spin_outline.value())
         c.set("crosshair.dot", self.chk_dot.isChecked())
@@ -843,6 +609,7 @@ class SettingsPanel(QWidget):
         c.set("display.fps", self.spin_fps.value())
         c.save()
 
+        # Show the overlay with new settings (hide first to fully clear old pixels)
         self.overlay.set_visible(False)
         self.overlay.refresh_config()
         self.overlay.set_visible(True)
@@ -864,10 +631,8 @@ class SettingsPanel(QWidget):
         self.btn_hide.setText(t("btn.hide") if visible else t("btn.show"))
 
     def _quit_app(self):
-        """Full quit — kills overlay and process."""
-        self.config.save()
+        """Fully quit the application — releases file locks so EXE can be deleted."""
         self.close_app.emit()
-        os._exit(0)
 
     def _load_from_config(self):
         c = self.config
@@ -905,8 +670,6 @@ class SettingsPanel(QWidget):
         self.slider_opacity.setValue(int(c.get("display.opacity", 1.0) * 100))
         self.spin_fps.setValue(c.get("display.fps", 60))
 
-        self._theme = c.get("general.theme", "midnight")
-        self._load_wallpaper()
         self._on_param_changed()
 
     # ── Profile management ──
@@ -940,7 +703,7 @@ class SettingsPanel(QWidget):
             reply = QMessageBox.question(
                 self, t("prof.del_title"),
                 t("prof.del_confirm", name=name),
-                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes | QMessageBox.No
             )
             if reply == QMessageBox.Yes:
                 self.config.delete_profile(name)
@@ -952,12 +715,18 @@ class SettingsPanel(QWidget):
             self.overlay.refresh_config()
             self.profile_changed.emit(preset_name)
 
-    # ── Window events ──
-
     def closeEvent(self, event):
-        """X button = hide to tray (app keeps running, crosshair stays)."""
-        event.ignore()
-        self.hide()
-        self.hide_to_tray.emit()
+        """X button = full quit."""
+        event.accept()
+        self.close_app.emit()
 
-    # NO changeEvent override — minimize goes to taskbar natively
+    def changeEvent(self, event):
+        """Minimize button = hide to tray, app keeps running."""
+        from PyQt5.QtCore import QEvent
+        if event.type() == QEvent.WindowStateChange:
+            if self.windowState() & Qt.WindowMinimized:
+                event.ignore()
+                self.setWindowState(Qt.WindowNoState)
+                self.hide()
+                return
+        super().changeEvent(event)

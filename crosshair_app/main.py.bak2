@@ -125,13 +125,6 @@ class CrosshairXApp:
                 ctypes.windll.shcore.SetProcessDpiAwareness(1)
             except Exception:
                 pass
-            # Set AppUserModelID so taskbar shows CrosshairX name & icon, not Python
-            try:
-                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-                    "com.crosshairx.app"
-                )
-            except Exception:
-                pass
 
         self.app = QApplication(sys.argv)
         self.app.setApplicationName("CrosshairX")
@@ -166,9 +159,7 @@ class CrosshairXApp:
 
         # Create settings panel
         self.settings = SettingsPanel(self.config, self.overlay)
-        self.settings.setWindowIcon(self.icon)  # Set app icon on settings window
         self.settings.close_app.connect(self.quit)
-        self.settings.hide_to_tray.connect(self._on_hide_to_tray)
 
         # Create system tray
         self._setup_tray()
@@ -263,10 +254,7 @@ class CrosshairXApp:
     # ===================== ACTIONS =====================
 
     def _show_settings(self):
-        """Show settings panel (restore from hidden/minimized state)."""
-        self.settings.setWindowState(
-            self.settings.windowState() & ~Qt.WindowMinimized | Qt.WindowActive
-        )
+        """Show settings panel."""
         self.settings.show()
         self.settings.raise_()
         self.settings.activateWindow()
@@ -298,12 +286,8 @@ class CrosshairXApp:
 
     def _on_tray_activated(self, reason):
         """Handle tray icon clicks."""
-        if reason in (QSystemTrayIcon.DoubleClick, QSystemTrayIcon.Trigger):
+        if reason == QSystemTrayIcon.DoubleClick:
             self._show_settings()
-
-    def _on_hide_to_tray(self):
-        """Settings window was closed with X — app keeps running in tray."""
-        pass  # Nothing to do; tray is already visible, overlay keeps rendering
 
     def quit(self):
         """Quit the application completely — kills process, removes crosshair."""
