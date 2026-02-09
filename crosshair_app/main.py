@@ -23,8 +23,22 @@ from .settings import SettingsPanel
 from .i18n import t, set_language
 
 
+def _resource_path(relative: str) -> str:
+    """Get absolute path to a bundled resource (works in dev and PyInstaller)."""
+    if getattr(sys, 'frozen', False):
+        base = sys._MEIPASS
+    else:
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, relative)
+
+
 def create_app_icon() -> QIcon:
-    """Create a simple crosshair icon programmatically (no external files needed)."""
+    """Load app icon from bundled .ico file, fallback to generated icon."""
+    ico_path = _resource_path(os.path.join("assets", "icon.ico"))
+    if os.path.exists(ico_path):
+        return QIcon(ico_path)
+
+    # Fallback: generate programmatically
     size = 64
     pixmap = QPixmap(size, size)
     pixmap.fill(QColor(0, 0, 0, 0))
@@ -32,24 +46,73 @@ def create_app_icon() -> QIcon:
     painter = QPainter(pixmap)
     painter.setRenderHint(QPainter.Antialiasing)
 
-    # Draw circle
     pen = QPen(QColor(0, 212, 255), 3)
     painter.setPen(pen)
     painter.drawEllipse(8, 8, 48, 48)
 
-    # Draw cross
     pen = QPen(QColor(0, 255, 100), 2)
     painter.setPen(pen)
     painter.drawLine(32, 4, 32, 60)
     painter.drawLine(4, 32, 60, 32)
 
-    # Center dot
     painter.setBrush(QBrush(QColor(255, 50, 50)))
     painter.setPen(QPen(QColor(255, 50, 50), 1))
     painter.drawEllipse(28, 28, 8, 8)
 
     painter.end()
     return QIcon(pixmap)
+
+
+def _get_icon_path() -> str:
+    """Return path to the .ico file (bundled or assets/)."""
+    return _resource_path(os.path.join("assets", "icon.ico"))
+
+
+def create_desktop_shortcut() -> bool:
+    """Create a desktop shortcut pointing to the running EXE (Windows only)."""
+    if sys.platform != "win32":
+        return False
+    if not getattr(sys, 'frozen', False):
+        return False  # Only for EXE builds
+
+    try:
+        import winreg
+        # Get Desktop path from registry (works for any locale)
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+        )
+        desktop = winreg.QueryValueEx(key, "Desktop")[0]
+        winreg.CloseKey(key)
+    except Exception:
+        desktop = os.path.join(os.path.expanduser("~"), "Desktop")
+
+    shortcut_path = os.path.join(desktop, "CrosshairX.lnk")
+    if os.path.exists(shortcut_path):
+        return True  # Already exists
+
+    exe_path = sys.executable
+    ico_path = _get_icon_path()
+
+    try:
+        # Use PowerShell to create the shortcut (no extra dependencies)
+        ps_script = f'''
+$ws = New-Object -ComObject WScript.Shell
+$s = $ws.CreateShortcut("{shortcut_path}")
+$s.TargetPath = "{exe_path}"
+$s.WorkingDirectory = "{os.path.dirname(exe_path)}"
+$s.IconLocation = "{ico_path},0"
+$s.Description = "CrosshairX — Custom Gaming Crosshair"
+$s.Save()
+'''
+        import subprocess
+        subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps_script],
+            capture_output=True, timeout=5
+        )
+        return os.path.exists(shortcut_path)
+    except Exception:
+        return False
 
 
 class CrosshairXApp:
@@ -73,6 +136,12 @@ class CrosshairXApp:
         # Load config
         self.config = Config()
         set_language(self.config.get("general.language", "ru"))
+
+        # Create desktop shortcut on first launch (EXE only)
+        if not self.config.get("general.shortcut_created", False):
+            if create_desktop_shortcut():
+                self.config.set("general.shortcut_created", True)
+                self.config.save()
 
         # Create overlay
         self.overlay = OverlayWindow(self.config)

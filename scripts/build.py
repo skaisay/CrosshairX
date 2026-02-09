@@ -23,17 +23,27 @@ def build():
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    icon_path = os.path.join(root, "assets", "icon.ico")
 
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--onefile",
         "--windowed",
         "--name", "CrosshairX",
-        "--add-data", f"crosshair_app{os.pathsep}crosshair_app",
+        "--icon", icon_path,
+        "--add-data", f"assets{os.pathsep}assets",
         "--hidden-import", "PyQt5",
         "--hidden-import", "PyQt5.QtCore",
         "--hidden-import", "PyQt5.QtGui",
         "--hidden-import", "PyQt5.QtWidgets",
+        "--hidden-import", "crosshair_app",
+        "--hidden-import", "crosshair_app.main",
+        "--hidden-import", "crosshair_app.overlay",
+        "--hidden-import", "crosshair_app.settings",
+        "--hidden-import", "crosshair_app.config",
+        "--hidden-import", "crosshair_app.crosshair",
+        "--hidden-import", "crosshair_app.animations",
+        "--hidden-import", "crosshair_app.i18n",
         # Optimize: strip debug, exclude heavy unused modules
         "--exclude-module", "matplotlib",
         "--exclude-module", "numpy",
