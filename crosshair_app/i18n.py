@@ -126,6 +126,65 @@ _STRINGS = {
     "btn.hide":  {"ru": "Скрыть прицел",   "en": "Hide crosshair"},
     "btn.show":  {"ru": "Показать прицел",  "en": "Show crosshair"},
     "btn.quit":  {"ru": "Выход",            "en": "Quit"},
+
+    # ---- Import crosshair from AI ----
+    "prof.import_title": {"ru": "Импорт прицела", "en": "Import Crosshair"},
+    "prof.import_hint": {
+        "ru": "Создайте уникальный прицел с помощью ИИ и вставьте конфигурацию",
+        "en": "Create a unique crosshair using AI and paste the config",
+    },
+    "prof.import_btn": {"ru": "Импорт из ИИ", "en": "Import from AI"},
+    "prof.import_instruction": {
+        "ru": "Скопируйте инструкцию ниже и отправьте любому ИИ-ассистенту "
+              "(ChatGPT, Claude и др.). Затем вставьте полученный JSON сюда.",
+        "en": "Copy the instruction below and send it to any AI assistant "
+              "(ChatGPT, Claude, etc.). Then paste the returned JSON here.",
+    },
+    "prof.import_format": {
+        "ru": ("Сгенерируй конфигурацию прицела для CrosshairX в формате JSON.\n\n"
+               "Поля:\n"
+               '- "style": одно из ["cross","dot","circle","chevron","diamond",'
+               '"crossdot","triangle","crosshair_classic","square","plus_thin",'
+               '"crosscircle","arrows"]\n'
+               '- "size": число 4-100\n'
+               '- "thickness": число 1-10\n'
+               '- "gap": число 0-30\n'
+               '- "color": [R,G,B,A] (0-255)\n'
+               '- "dot": true/false\n'
+               '- "dot_size": число 1-10\n'
+               '- "outline": true/false\n'
+               '- "outline_thickness": число 1-5\n'
+               '- "t_style": true/false\n\n'
+               "Верни ТОЛЬКО JSON.\n"
+               'Пример: {"style":"cross","size":24,"thickness":2,"gap":5,'
+               '"color":[0,255,128,255],"dot":true,"dot_size":2,'
+               '"outline":true,"outline_thickness":1,"t_style":false}'),
+        "en": ("Generate a crosshair config for CrosshairX in JSON.\n\n"
+               "Fields:\n"
+               '- "style": one of ["cross","dot","circle","chevron","diamond",'
+               '"crossdot","triangle","crosshair_classic","square","plus_thin",'
+               '"crosscircle","arrows"]\n'
+               '- "size": 4-100\n'
+               '- "thickness": 1-10\n'
+               '- "gap": 0-30\n'
+               '- "color": [R,G,B,A] (0-255)\n'
+               '- "dot": true/false\n'
+               '- "dot_size": 1-10\n'
+               '- "outline": true/false\n'
+               '- "outline_thickness": 1-5\n'
+               '- "t_style": true/false\n\n'
+               "Return ONLY JSON.\n"
+               'Example: {"style":"cross","size":24,"thickness":2,"gap":5,'
+               '"color":[0,255,128,255],"dot":true,"dot_size":2,'
+               '"outline":true,"outline_thickness":1,"t_style":false}'),
+    },
+    "prof.import_copy_btn": {"ru": "Копировать инструкцию", "en": "Copy instruction"},
+    "prof.import_paste_hint": {"ru": "Вставьте JSON конфигурацию:", "en": "Paste JSON config:"},
+    "prof.import_apply_btn": {"ru": "Применить", "en": "Apply"},
+    "prof.import_cancel": {"ru": "Отмена", "en": "Cancel"},
+    "prof.import_success": {"ru": "Прицел успешно импортирован!", "en": "Crosshair imported!"},
+    "prof.import_error_title": {"ru": "Ошибка импорта", "en": "Import Error"},
+    "prof.import_error_msg": {"ru": "Не удалось прочитать JSON:", "en": "Failed to parse JSON:"},
 }
 
 _current_lang = "ru"

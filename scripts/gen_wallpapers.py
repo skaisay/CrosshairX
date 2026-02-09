@@ -22,7 +22,7 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "Pillow", "--quiet"])
     from PIL import Image, ImageDraw, ImageFilter
 
-W, H = 700, 900
+W, H = 1080, 756
 OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "themes")
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -351,7 +351,7 @@ def gen_sakura():
 
 
 if __name__ == "__main__":
-    print("Generating CrosshairX wallpapers (700x900)...")
+    print("Generating CrosshairX wallpapers (1080x756 landscape)...")
     gen_midnight()
     gen_purple()
     gen_ocean()
