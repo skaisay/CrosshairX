@@ -290,7 +290,7 @@ class CrosshairXApp:
             self._show_settings()
 
     def quit(self):
-        """Quit the application completely — releases all file locks."""
+        """Quit the application completely — kills process, removes crosshair."""
         self.config.save()
         # Stop hotkey polling
         if hasattr(self, '_hotkey_timer'):
@@ -298,9 +298,9 @@ class CrosshairXApp:
         # Completely destroy overlay (stops timer, hides, deletes widget)
         self.overlay.shutdown()
         self.tray.hide()
-        self.settings.close()
-        self.settings.deleteLater()
         self.app.quit()
+        # Force kill process — guarantees no ghost crosshair
+        os._exit(0)
 
     def run(self) -> int:
         """Start the application event loop."""

@@ -176,7 +176,11 @@ class SettingsPanel(QWidget):
         set_language(lang)
 
         self.setWindowTitle(t("app.title"))
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.WindowCloseButtonHint)
+        self.setWindowFlags(
+            Qt.WindowStaysOnTopHint
+            | Qt.WindowCloseButtonHint
+            | Qt.WindowMinimizeButtonHint
+        )
         self.setFixedSize(480, 600)
         self.setStyleSheet(DARK_STYLE)
 
@@ -712,5 +716,17 @@ class SettingsPanel(QWidget):
             self.profile_changed.emit(preset_name)
 
     def closeEvent(self, event):
-        event.ignore()
-        self.hide()
+        """X button = full quit."""
+        event.accept()
+        self.close_app.emit()
+
+    def changeEvent(self, event):
+        """Minimize button = hide to tray, app keeps running."""
+        from PyQt5.QtCore import QEvent
+        if event.type() == QEvent.WindowStateChange:
+            if self.windowState() & Qt.WindowMinimized:
+                event.ignore()
+                self.setWindowState(Qt.WindowNoState)
+                self.hide()
+                return
+        super().changeEvent(event)
