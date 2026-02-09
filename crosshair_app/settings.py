@@ -19,6 +19,7 @@ import webbrowser
 import urllib.request
 import urllib.parse
 import hashlib
+import ssl
 
 from PyQt5.QtCore import (
     Qt, pyqtSignal, QRect, QPoint, QTimer,
@@ -2169,7 +2170,7 @@ class SettingsPanel(QWidget):
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
             )
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with urllib.request.urlopen(req, timeout=15, context=self._ssl_ctx()) as resp:
                 data = json.loads(resp.read().decode())
             checkout_url = data.get("url")
             if checkout_url:
@@ -2199,12 +2200,24 @@ class SettingsPanel(QWidget):
             target=self._do_roblox_search, args=(username,), daemon=True
         ).start()
 
+    @staticmethod
+    def _ssl_ctx():
+        """Create SSL context that works inside PyInstaller bundle."""
+        try:
+            return ssl.create_default_context()
+        except Exception:
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            return ctx
+
     def _do_roblox_search(self, username):
         """Background: query Roblox APIs and post result to main thread."""
         _hdrs = {
             "Accept": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CrosshairX/1.0",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
         }
+        _ctx = self._ssl_ctx()
         try:
             # 1. Search user (Roblox API requires limit >= 10)
             url = (
@@ -2212,7 +2225,7 @@ class SettingsPanel(QWidget):
                 f"?keyword={urllib.parse.quote(username)}&limit=10"
             )
             req = urllib.request.Request(url, headers=_hdrs)
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=10, context=_ctx) as resp:
                 data = json.loads(resp.read().decode())
             users = data.get("data", [])
             if not users:
@@ -2224,10 +2237,10 @@ class SettingsPanel(QWidget):
             # 2. Full user details
             url2 = f"https://users.roblox.com/v1/users/{user_id}"
             req2 = urllib.request.Request(url2, headers=_hdrs)
-            with urllib.request.urlopen(req2, timeout=10) as resp2:
+            with urllib.request.urlopen(req2, timeout=10, context=_ctx) as resp2:
                 details = json.loads(resp2.read().decode())
 
-            # 3. Presence (online / in-game) — may require auth, handle gracefully
+            # 3. Presence (online / in-game)
             presence = {}
             try:
                 url3 = "https://presence.roblox.com/v1/presence/users"
@@ -2236,13 +2249,13 @@ class SettingsPanel(QWidget):
                     **_hdrs,
                     "Content-Type": "application/json",
                 })
-                with urllib.request.urlopen(req3, timeout=10) as resp3:
+                with urllib.request.urlopen(req3, timeout=10, context=_ctx) as resp3:
                     pd = json.loads(resp3.read().decode())
                 presences = pd.get("userPresences", [])
                 if presences:
                     presence = presences[0]
             except Exception:
-                pass  # Presence API may require auth — skip gracefully
+                pass
 
             # 4. Avatar thumbnail
             avatar_url = None
@@ -2252,7 +2265,7 @@ class SettingsPanel(QWidget):
                     f"?userIds={user_id}&size=150x150&format=Png&isCircular=false"
                 )
                 req4 = urllib.request.Request(url4, headers=_hdrs)
-                with urllib.request.urlopen(req4, timeout=10) as resp4:
+                with urllib.request.urlopen(req4, timeout=10, context=_ctx) as resp4:
                     td = json.loads(resp4.read().decode())
                 thumbs = td.get("data", [])
                 if thumbs and thumbs[0].get("imageUrl"):
@@ -2387,8 +2400,9 @@ class SettingsPanel(QWidget):
     def _load_avatar_async(self, url):
         """Download avatar image in background thread."""
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "CrosshairX/1.0"})
-            with urllib.request.urlopen(req, timeout=8) as resp:
+            _ctx = self._ssl_ctx()
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=8, context=_ctx) as resp:
                 data = resp.read()
             QTimer.singleShot(0, lambda d=data: self._set_avatar(d))
         except Exception:
