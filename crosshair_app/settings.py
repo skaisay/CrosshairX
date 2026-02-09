@@ -14,6 +14,11 @@ import sys
 import json
 import ctypes
 import subprocess
+import threading
+import webbrowser
+import urllib.request
+import urllib.parse
+import hashlib
 
 from PyQt5.QtCore import (
     Qt, pyqtSignal, QRect, QPoint, QTimer,
@@ -28,7 +33,7 @@ from PyQt5.QtWidgets import (
     QPushButton, QGroupBox, QCheckBox, QColorDialog, QSpinBox,
     QTabWidget, QGridLayout, QMessageBox, QInputDialog, QScrollArea,
     QDialog, QTextEdit, QApplication, QProgressBar, QSizePolicy,
-    QFrame,
+    QFrame, QLineEdit,
 )
 
 from .i18n import t, set_language, get_language
@@ -264,6 +269,9 @@ GAME_TIPS = {
         ],
     },
 }
+
+# -- Master promo code (admin testing) --
+_MASTER_PROMO = "CROSSHAIRX-ULTIMATE-2026"
 
 
 def _enable_acrylic(hwnd, tint=0x14000000):
@@ -844,36 +852,38 @@ class SettingsPanel(QWidget):
         self.tabs.addTab(self._build_monitor_tab(), t("tab.monitor"))
         self.tabs.addTab(self._build_games_tab(), t("tab.games"))
         self.tabs.addTab(self._build_profiles_tab(), t("tab.profiles"))
+        self.tabs.addTab(self._build_premium_tab(), t("tab.premium"))
         lay.addWidget(self.tabs)
 
-        # -- Bottom buttons --
+        # -- Bottom buttons (stretched evenly, no min-width) --
         btn_row = QHBoxLayout()
-        btn_row.setSpacing(8)
+        btn_row.setSpacing(10)
+        btn_row.setContentsMargins(0, 0, 0, 0)
 
         self.btn_apply = QPushButton(t("btn.apply"))
         self.btn_apply.setObjectName("accentBtn")
-        self.btn_apply.setMinimumWidth(100)
+        self.btn_apply.setMinimumHeight(36)
         self.btn_apply.clicked.connect(self._apply_settings)
-        btn_row.addWidget(self.btn_apply)
+        btn_row.addWidget(self.btn_apply, 1)
 
         self.btn_reset = QPushButton(t("btn.reset"))
-        self.btn_reset.setMinimumWidth(80)
+        self.btn_reset.setMinimumHeight(36)
         self.btn_reset.clicked.connect(self._reset_defaults)
-        btn_row.addWidget(self.btn_reset)
+        btn_row.addWidget(self.btn_reset, 1)
 
         self.btn_hide = QPushButton(t("btn.show"))
-        self.btn_hide.setMinimumWidth(140)
+        self.btn_hide.setMinimumHeight(36)
         self.btn_hide.clicked.connect(self._toggle_overlay)
-        btn_row.addWidget(self.btn_hide)
+        btn_row.addWidget(self.btn_hide, 1)
 
         self.btn_quit = QPushButton(t("btn.quit"))
         self.btn_quit.setObjectName("dangerBtn")
-        self.btn_quit.setMinimumWidth(80)
+        self.btn_quit.setMinimumHeight(36)
         self.btn_quit.clicked.connect(self._quit_app)
-        btn_row.addWidget(self.btn_quit)
+        btn_row.addWidget(self.btn_quit, 1)
 
         btn_w = QWidget()
-        btn_w.setFixedHeight(42)
+        btn_w.setFixedHeight(48)
         btn_w.setLayout(btn_row)
         lay.addWidget(btn_w)
 
@@ -1320,6 +1330,33 @@ class SettingsPanel(QWidget):
         ctrl.addStretch()
         lay.addLayout(ctrl)
 
+        # Roblox Player Search
+        roblox_grp = QGroupBox(t("roblox.search"))
+        rl = QVBoxLayout(roblox_grp)
+        rl.setSpacing(6)
+        search_row = QHBoxLayout()
+        search_row.setSpacing(6)
+        self._roblox_input = QLineEdit()
+        self._roblox_input.setPlaceholderText(t("roblox.search_hint"))
+        self._roblox_input.setMinimumHeight(30)
+        self._roblox_input.returnPressed.connect(self._search_roblox)
+        search_row.addWidget(self._roblox_input, 1)
+        btn_roblox = QPushButton(t("roblox.search_btn"))
+        btn_roblox.setObjectName("accentBtn")
+        btn_roblox.setMinimumHeight(30)
+        btn_roblox.clicked.connect(self._search_roblox)
+        search_row.addWidget(btn_roblox)
+        rl.addLayout(search_row)
+        self._roblox_status = QLabel("")
+        self._roblox_status.setObjectName("sectionHelper")
+        rl.addWidget(self._roblox_status)
+        self._roblox_results_w = QWidget()
+        self._roblox_results_lay = QVBoxLayout(self._roblox_results_w)
+        self._roblox_results_lay.setContentsMargins(0, 0, 0, 0)
+        self._roblox_results_lay.setSpacing(4)
+        rl.addWidget(self._roblox_results_w)
+        lay.addWidget(roblox_grp)
+
         # Recommended presets
         preset_grp = QGroupBox(t("games.recommended"))
         self._preset_lay = QVBoxLayout(preset_grp)
@@ -1339,6 +1376,81 @@ class SettingsPanel(QWidget):
         _th.setWordWrap(True)
         self._tips_lay.addWidget(_th)
         lay.addWidget(tips_grp)
+
+        lay.addStretch()
+        return self._make_scroll(w)
+
+    # -- Premium Tab --
+
+    def _build_premium_tab(self):
+        w = QWidget()
+        lay = QVBoxLayout(w)
+        lay.setSpacing(6)
+        lay.setContentsMargins(6, 4, 6, 4)
+
+        # Status card
+        status_grp = QGroupBox(t("prem.status"))
+        sl = QVBoxLayout(status_grp)
+        sl.setSpacing(6)
+        is_prem = self._is_premium()
+        self._prem_status_lbl = QLabel(
+            t("prem.active") if is_prem else t("prem.free")
+        )
+        self._prem_status_lbl.setStyleSheet(
+            "color: #00e070; font-size: 16px; font-weight: bold; padding: 8px;"
+            if is_prem
+            else "color: #a0a8c0; font-size: 16px; font-weight: bold; padding: 8px;"
+        )
+        self._prem_status_lbl.setAlignment(Qt.AlignCenter)
+        sl.addWidget(self._prem_status_lbl)
+        lay.addWidget(status_grp)
+
+        # Features list
+        feat_grp = QGroupBox(t("prem.features"))
+        fl = QVBoxLayout(feat_grp)
+        fl.setSpacing(4)
+        for key in [
+            "prem.feat_ai", "prem.feat_anim", "prem.feat_roblox",
+            "prem.feat_auto", "prem.feat_profiles", "prem.feat_presets",
+        ]:
+            lbl = QLabel(f"  \u2726  {t(key)}")
+            lbl.setStyleSheet("color: #c0c8e0; font-size: 13px; padding: 2px 4px;")
+            fl.addWidget(lbl)
+        lay.addWidget(feat_grp)
+
+        # Promo code
+        promo_grp = QGroupBox(t("prem.promo"))
+        pl = QVBoxLayout(promo_grp)
+        pl.setSpacing(6)
+        hint = QLabel(t("prem.promo_hint"))
+        hint.setObjectName("sectionHelper")
+        hint.setWordWrap(True)
+        pl.addWidget(hint)
+        promo_row = QHBoxLayout()
+        promo_row.setSpacing(6)
+        self._promo_input = QLineEdit()
+        self._promo_input.setPlaceholderText("XXXX-XXXX-XXXX")
+        self._promo_input.setMinimumHeight(30)
+        self._promo_input.returnPressed.connect(self._try_promo)
+        promo_row.addWidget(self._promo_input, 1)
+        btn_promo = QPushButton(t("prem.activate"))
+        btn_promo.setObjectName("accentBtn")
+        btn_promo.setMinimumHeight(30)
+        btn_promo.clicked.connect(self._try_promo)
+        promo_row.addWidget(btn_promo)
+        pl.addLayout(promo_row)
+        lay.addWidget(promo_grp)
+
+        # Buy Premium button
+        buy_hint = QLabel(t("prem.buy_hint"))
+        buy_hint.setObjectName("sectionHelper")
+        buy_hint.setWordWrap(True)
+        lay.addWidget(buy_hint)
+        btn_buy = QPushButton(t("prem.buy"))
+        btn_buy.setObjectName("accentBtn")
+        btn_buy.setMinimumHeight(38)
+        btn_buy.clicked.connect(self._buy_premium)
+        lay.addWidget(btn_buy)
 
         lay.addStretch()
         return self._make_scroll(w)
@@ -1947,6 +2059,289 @@ class SettingsPanel(QWidget):
         event.ignore()
         self.hide()
         self.hide_to_tray.emit()
+
+    # ================================================================
+    #                       PREMIUM SYSTEM
+    # ================================================================
+
+    def _get_device_id(self):
+        """Generate unique device identifier (hash of machine info)."""
+        import platform
+        try:
+            user = os.getlogin()
+        except Exception:
+            user = "unknown"
+        raw = f"{platform.node()}-{platform.machine()}-{user}"
+        return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+    def _is_premium(self):
+        """Check if premium is activated (local verification with hash)."""
+        if not self.config.get("premium.activated", False):
+            return False
+        stored_hash = self.config.get("premium.hash", "")
+        dev_id = self._get_device_id()
+        expected = hashlib.sha256(f"CXP-{dev_id}-ACTIVE".encode()).hexdigest()[:16]
+        return stored_hash == expected
+
+    def _activate_premium(self):
+        """Activate premium and store verification hash."""
+        dev_id = self._get_device_id()
+        verification = hashlib.sha256(f"CXP-{dev_id}-ACTIVE".encode()).hexdigest()[:16]
+        self.config.set("premium.activated", True)
+        self.config.set("premium.hash", verification)
+        self.config.save()
+
+    def _update_premium_status(self):
+        """Refresh premium status label in Premium tab."""
+        is_prem = self._is_premium()
+        if hasattr(self, '_prem_status_lbl'):
+            self._prem_status_lbl.setText(
+                t("prem.active") if is_prem else t("prem.free")
+            )
+            self._prem_status_lbl.setStyleSheet(
+                "color: #00e070; font-size: 16px; font-weight: bold; padding: 8px;"
+                if is_prem
+                else "color: #a0a8c0; font-size: 16px; font-weight: bold; padding: 8px;"
+            )
+
+    def _try_promo(self):
+        """Validate and activate promo code."""
+        code = self._promo_input.text().strip().upper()
+        if code == _MASTER_PROMO:
+            self._activate_premium()
+            self._update_premium_status()
+            self._promo_input.clear()
+            QMessageBox.information(self, "CrosshairX", t("prem.promo_success"))
+        else:
+            QMessageBox.warning(self, "CrosshairX", t("prem.promo_error"))
+
+    def _buy_premium(self):
+        """Open Stripe payment link in browser."""
+        webbrowser.open("https://buy.stripe.com/crosshairx-premium")
+
+    # ================================================================
+    #                    ROBLOX PLAYER SEARCH
+    # ================================================================
+
+    def _search_roblox(self):
+        """Search Roblox user by username (runs in background thread)."""
+        username = self._roblox_input.text().strip()
+        if not username:
+            return
+        self._roblox_status.setText(t("roblox.searching"))
+        self._roblox_status.setStyleSheet("color: #80a0d0; font-size: 13px;")
+        self._clear_layout(self._roblox_results_lay)
+        threading.Thread(
+            target=self._do_roblox_search, args=(username,), daemon=True
+        ).start()
+
+    def _do_roblox_search(self, username):
+        """Background: query Roblox APIs and post result to main thread."""
+        try:
+            # 1. Search user
+            url = (
+                f"https://users.roblox.com/v1/users/search"
+                f"?keyword={urllib.parse.quote(username)}&limit=1"
+            )
+            req = urllib.request.Request(url, headers={"Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                data = json.loads(resp.read().decode())
+            users = data.get("data", [])
+            if not users:
+                QTimer.singleShot(0, self._show_roblox_not_found)
+                return
+
+            user_id = users[0]["id"]
+
+            # 2. Full user details
+            url2 = f"https://users.roblox.com/v1/users/{user_id}"
+            req2 = urllib.request.Request(url2, headers={"Accept": "application/json"})
+            with urllib.request.urlopen(req2, timeout=6) as resp2:
+                details = json.loads(resp2.read().decode())
+
+            # 3. Presence (online / in-game)
+            url3 = "https://presence.roblox.com/v1/presence/users"
+            body = json.dumps({"userIds": [user_id]}).encode()
+            req3 = urllib.request.Request(url3, data=body, headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            })
+            presence = {}
+            try:
+                with urllib.request.urlopen(req3, timeout=6) as resp3:
+                    pd = json.loads(resp3.read().decode())
+                presences = pd.get("userPresences", [])
+                if presences:
+                    presence = presences[0]
+            except Exception:
+                pass
+
+            # 4. Avatar thumbnail
+            url4 = (
+                f"https://thumbnails.roblox.com/v1/users/avatar"
+                f"?userIds={user_id}&size=150x150&format=Png&isCircular=false"
+            )
+            req4 = urllib.request.Request(url4, headers={"Accept": "application/json"})
+            avatar_url = None
+            try:
+                with urllib.request.urlopen(req4, timeout=6) as resp4:
+                    td = json.loads(resp4.read().decode())
+                thumbs = td.get("data", [])
+                if thumbs and thumbs[0].get("imageUrl"):
+                    avatar_url = thumbs[0]["imageUrl"]
+            except Exception:
+                pass
+
+            result = {
+                "id": user_id,
+                "name": details.get("name", ""),
+                "displayName": details.get("displayName", ""),
+                "description": details.get("description", ""),
+                "created": details.get("created", "")[:10],
+                "isBanned": details.get("isBanned", False),
+                "presence": presence,
+                "avatarUrl": avatar_url,
+            }
+            QTimer.singleShot(0, lambda r=result: self._show_roblox_result(r))
+
+        except Exception as e:
+            QTimer.singleShot(0, lambda: self._show_roblox_error(str(e)))
+
+    def _show_roblox_result(self, result):
+        """Display Roblox user info in the results area."""
+        self._clear_layout(self._roblox_results_lay)
+        self._roblox_status.setText("")
+        lay = self._roblox_results_lay
+
+        # Card row: avatar + info
+        card = QHBoxLayout()
+        card.setSpacing(10)
+
+        # Avatar placeholder
+        self._roblox_avatar = QLabel()
+        self._roblox_avatar.setFixedSize(80, 80)
+        self._roblox_avatar.setStyleSheet(
+            "background: rgba(30,40,80,120); border-radius: 10px;"
+        )
+        self._roblox_avatar.setAlignment(Qt.AlignCenter)
+        self._roblox_avatar.setText("...")
+        card.addWidget(self._roblox_avatar)
+
+        # Load avatar async
+        if result.get("avatarUrl"):
+            threading.Thread(
+                target=self._load_avatar_async,
+                args=(result["avatarUrl"],),
+                daemon=True,
+            ).start()
+
+        # Info column
+        info = QVBoxLayout()
+        info.setSpacing(2)
+
+        name_lbl = QLabel(
+            f"<b>{result['displayName']}</b>  (@{result['name']})"
+        )
+        name_lbl.setStyleSheet("color: #e0e8ff; font-size: 14px;")
+        info.addWidget(name_lbl)
+
+        created_lbl = QLabel(f"{t('roblox.created')} {result['created']}")
+        created_lbl.setStyleSheet("color: #8090b0; font-size: 12px;")
+        info.addWidget(created_lbl)
+
+        if result.get("description"):
+            bio = result["description"][:120]
+            if len(result["description"]) > 120:
+                bio += "..."
+            bio_lbl = QLabel(f"{t('roblox.bio')} {bio}")
+            bio_lbl.setWordWrap(True)
+            bio_lbl.setStyleSheet("color: #a0a8c0; font-size: 12px;")
+            info.addWidget(bio_lbl)
+
+        if result.get("isBanned"):
+            ban_lbl = QLabel(f"\u26d4 {t('roblox.banned')}")
+            ban_lbl.setStyleSheet(
+                "color: #ff5060; font-size: 12px; font-weight: bold;"
+            )
+            info.addWidget(ban_lbl)
+
+        # Presence
+        pres = result.get("presence", {})
+        pres_type = pres.get("userPresenceType", 0)
+        if pres_type == 0:
+            status_text = t("roblox.offline")
+            status_color = "#606880"
+        elif pres_type == 1:
+            status_text = t("roblox.online")
+            status_color = "#00e070"
+        elif pres_type == 2:
+            loc = pres.get("lastLocation", "")
+            status_text = f"{t('roblox.in_game')} {loc}"
+            status_color = "#00c0ff"
+        elif pres_type == 3:
+            status_text = t("roblox.in_studio")
+            status_color = "#ffb020"
+        else:
+            status_text = t("roblox.offline")
+            status_color = "#606880"
+
+        st_lbl = QLabel(f"{t('roblox.status')} {status_text}")
+        st_lbl.setStyleSheet(
+            f"color: {status_color}; font-size: 13px; font-weight: bold;"
+        )
+        info.addWidget(st_lbl)
+
+        card.addLayout(info, 1)
+        card_w = QWidget()
+        card_w.setLayout(card)
+        lay.addWidget(card_w)
+
+        # Join Game button (only if user is in-game)
+        if pres_type == 2 and pres.get("placeId"):
+            btn_join = QPushButton(f"\U0001f3ae  {t('roblox.join')}")
+            btn_join.setObjectName("accentBtn")
+            btn_join.setMinimumHeight(34)
+            place_id = pres["placeId"]
+            game_id = pres.get("gameId", "")
+            btn_join.clicked.connect(
+                lambda checked, p=place_id, g=game_id: self._join_roblox_game(p, g)
+            )
+            lay.addWidget(btn_join)
+
+    def _show_roblox_not_found(self):
+        self._roblox_status.setText(t("roblox.not_found"))
+        self._roblox_status.setStyleSheet("color: #ff8060; font-size: 13px;")
+
+    def _show_roblox_error(self, msg):
+        self._roblox_status.setText(f"{t('roblox.error')}: {msg[:80]}")
+        self._roblox_status.setStyleSheet("color: #ff5060; font-size: 12px;")
+
+    def _load_avatar_async(self, url):
+        """Download avatar image in background thread."""
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "CrosshairX/1.0"})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                data = resp.read()
+            QTimer.singleShot(0, lambda d=data: self._set_avatar(d))
+        except Exception:
+            pass
+
+    def _set_avatar(self, data):
+        """Set avatar pixmap on main thread."""
+        pm = QPixmap()
+        pm.loadFromData(data)
+        if not pm.isNull() and hasattr(self, '_roblox_avatar'):
+            self._roblox_avatar.setPixmap(
+                pm.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            )
+            self._roblox_avatar.setText("")
+
+    def _join_roblox_game(self, place_id, game_id=""):
+        """Open Roblox protocol to join a game."""
+        url = f"roblox://experiences/start?placeId={place_id}"
+        if game_id:
+            url += f"&gameInstanceId={game_id}"
+        webbrowser.open(url)
 
     # ================================================================
     #                   IMPORT CROSSHAIR FROM AI
