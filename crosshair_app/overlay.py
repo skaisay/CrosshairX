@@ -5,7 +5,7 @@ Optimized: smart repaint region, adaptive FPS, minimal CPU/GPU usage.
 """
 
 import sys
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, QRect
 from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtWidgets import QApplication, QWidget
 
@@ -31,6 +31,7 @@ class OverlayWindow(QWidget):
         self.animation = AnimationEngine()
         self._visible = True
         self._animation_enabled = config.get("animation.enabled", True)
+        self._prev_margin = 60  # Track previous crosshair size for clearing
 
         self._setup_window()
         self._setup_timer()
@@ -81,9 +82,12 @@ class OverlayWindow(QWidget):
         if not self._visible:
             return
         margin = self.config.get("crosshair.size", 20) + 40
-        x = int(self._center_x - margin)
-        y = int(self._center_y - margin)
-        self.update(x, y, margin * 2, margin * 2)
+        # Use the larger of current and previous margin to clear old remnants
+        clear_margin = max(margin, self._prev_margin)
+        self._prev_margin = margin
+        x = int(self._center_x - clear_margin)
+        y = int(self._center_y - clear_margin)
+        self.update(x, y, clear_margin * 2, clear_margin * 2)
 
     def paintEvent(self, event):
         """Render the crosshair - minimal draw area."""
@@ -91,6 +95,10 @@ class OverlayWindow(QWidget):
             return
 
         painter = QPainter(self)
+        # Clear the region first — erase any old crosshair pixels
+        painter.setCompositionMode(QPainter.CompositionMode_Clear)
+        painter.fillRect(event.rect(), Qt.transparent)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
         painter.setRenderHint(QPainter.Antialiasing, True)
 
         anim_config = self.config.data.get("animation", {})
@@ -130,6 +138,8 @@ class OverlayWindow(QWidget):
         self._update_geometry()
         self._animation_enabled = self.config.get("animation.enabled", True)
         self._update_timer_interval()
+        # Force full repaint so old crosshair is completely cleared
+        self.repaint()
 
     def trigger_recoil(self):
         self.animation.trigger_recoil()
