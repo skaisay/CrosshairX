@@ -111,6 +111,7 @@ _STRINGS = {
     "btn.reset": {"ru": "🔄 Сброс", "en": "🔄 Reset"},
     "btn.hide": {"ru": "👁 Скрыть прицел", "en": "👁 Hide crosshair"},
     "btn.show": {"ru": "👁 Показать прицел", "en": "👁 Show crosshair"},
+    "btn.quit": {"ru": "❌ Выход", "en": "❌ Quit"},
 }
 
 _current_lang = "ru"

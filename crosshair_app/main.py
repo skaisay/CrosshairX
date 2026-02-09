@@ -143,7 +143,7 @@ class CrosshairXApp:
                 self.config.set("general.shortcut_created", True)
                 self.config.save()
 
-        # Create overlay
+        # Create overlay (starts hidden — no crosshair until user applies)
         self.overlay = OverlayWindow(self.config)
 
         # Create settings panel
@@ -156,7 +156,7 @@ class CrosshairXApp:
         # Setup global hotkeys
         self._setup_hotkeys()
 
-        # Show windows
+        # Show overlay window (but _visible=False so nothing draws)
         self.overlay.show()
         if not start_minimized:
             self.settings.show()
@@ -250,41 +250,28 @@ class CrosshairXApp:
 
     def _toggle_overlay(self):
         """Toggle overlay visibility."""
-        visible = self.overlay.toggle_visibility()
-        self.tray.showMessage(
-            "CrosshairX",
-            t('tray.overlay_on') if visible else t('tray.overlay_off'),
-            QSystemTrayIcon.Information, 1000
-        )
+        self.overlay.toggle_visibility()
 
     def _toggle_animation(self):
         """Toggle animations."""
-        enabled = self.overlay.toggle_animation()
-        self.tray.showMessage(
-            "CrosshairX",
-            t('tray.anim_on') if enabled else t('tray.anim_off'),
-            QSystemTrayIcon.Information, 1000
-        )
+        self.overlay.toggle_animation()
 
     def _next_profile(self):
         name = self.config.next_profile()
         if name:
             self.overlay.refresh_config()
             self.settings._load_from_config()
-            self.tray.showMessage("CrosshairX", f"{t('tray.profile')}: {name}", QSystemTrayIcon.Information, 1000)
 
     def _prev_profile(self):
         name = self.config.prev_profile()
         if name:
             self.overlay.refresh_config()
             self.settings._load_from_config()
-            self.tray.showMessage("CrosshairX", f"{t('tray.profile')}: {name}", QSystemTrayIcon.Information, 1000)
 
     def _switch_profile(self, name: str):
         if self.config.load_profile(name):
             self.overlay.refresh_config()
             self.settings._load_from_config()
-            self.tray.showMessage("CrosshairX", f"{t('tray.profile')}: {name}", QSystemTrayIcon.Information, 1000)
 
     def _on_tray_activated(self, reason):
         """Handle tray icon clicks."""
@@ -292,8 +279,12 @@ class CrosshairXApp:
             self._show_settings()
 
     def quit(self):
-        """Quit the application."""
+        """Quit the application completely — releases all file locks."""
         self.config.save()
+        self.overlay.hide()
+        self.overlay.close()
+        self._hotkey_timer.stop()
+        self._timer_cleanup = True
         self.tray.hide()
         self.app.quit()
 

@@ -243,9 +243,17 @@ class SettingsPanel(QWidget):
         self.btn_reset.clicked.connect(self._reset_defaults)
         btn_row.addWidget(self.btn_reset)
 
-        self.btn_hide = QPushButton(t("btn.hide"))
+        self.btn_hide = QPushButton(t("btn.show"))  # Starts as Show since overlay is hidden
         self.btn_hide.clicked.connect(self._toggle_overlay)
         btn_row.addWidget(self.btn_hide)
+
+        self.btn_quit = QPushButton(t("btn.quit"))
+        self.btn_quit.setStyleSheet(
+            "QPushButton { background-color: #3a1020; border-color: #802040; color: #ff4060; }"
+            "QPushButton:hover { background-color: #501030; border-color: #ff4060; }"
+        )
+        self.btn_quit.clicked.connect(self._quit_app)
+        btn_row.addWidget(self.btn_quit)
 
         btn_w = QWidget()
         btn_w.setLayout(btn_row)
@@ -595,7 +603,12 @@ class SettingsPanel(QWidget):
         c.set("display.opacity", self.slider_opacity.value() / 100.0)
         c.set("display.fps", self.spin_fps.value())
         c.save()
+
+        # Show the overlay with new settings (hide first to fully clear old pixels)
+        self.overlay.set_visible(False)
         self.overlay.refresh_config()
+        self.overlay.set_visible(True)
+        self.btn_hide.setText(t("btn.hide"))
         self.config_changed.emit()
 
     def _reset_defaults(self):
@@ -611,6 +624,10 @@ class SettingsPanel(QWidget):
     def _toggle_overlay(self):
         visible = self.overlay.toggle_visibility()
         self.btn_hide.setText(t("btn.hide") if visible else t("btn.show"))
+
+    def _quit_app(self):
+        """Fully quit the application — releases file locks so EXE can be deleted."""
+        self.close_app.emit()
 
     def _load_from_config(self):
         c = self.config

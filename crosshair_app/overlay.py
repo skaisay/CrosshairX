@@ -1,11 +1,11 @@
 """
 Transparent overlay window for CrosshairX.
 Ultra-lightweight, click-through transparent overlay.
-Optimized: smart repaint region, adaptive FPS, minimal CPU/GPU usage.
+Optimized: adaptive FPS, minimal CPU/GPU usage.
 """
 
 import sys
-from PyQt5.QtCore import Qt, QTimer, QRect
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtWidgets import QApplication, QWidget
 
@@ -17,21 +17,20 @@ from .config import Config
 class OverlayWindow(QWidget):
     """
     Ultra-lightweight transparent overlay.
-    Only repaints the small crosshair region, not the full screen.
+    Uses hide()/show() for visibility — guarantees clean clearing.
     Adaptive FPS: high when animating, low when idle.
     """
 
-    IDLE_FPS = 10      # FPS when static (no animation)
-    ACTIVE_FPS = 60    # FPS when animating (smooth, low CPU)
+    IDLE_FPS = 10
+    ACTIVE_FPS = 60
 
     def __init__(self, config: Config, parent=None):
         super().__init__(parent)
         self.config = config
         self.renderer = CrosshairRenderer()
         self.animation = AnimationEngine()
-        self._visible = True
+        self._visible = False  # Start hidden — no crosshair until user applies
         self._animation_enabled = config.get("animation.enabled", True)
-        self._prev_margin = 60  # Track previous crosshair size for clearing
 
         self._setup_window()
         self._setup_timer()
@@ -47,7 +46,6 @@ class OverlayWindow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WA_NoSystemBackground, True)
         self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-        self.setAttribute(Qt.WA_OpaquePaintEvent, False)
         self._update_geometry()
 
     def _update_geometry(self):
@@ -78,27 +76,17 @@ class OverlayWindow(QWidget):
         self._timer.setInterval(max(1, int(1000 / fps)))
 
     def _tick(self):
-        """Only repaint a small region around the crosshair."""
+        """Trigger repaint."""
         if not self._visible:
             return
-        margin = self.config.get("crosshair.size", 20) + 40
-        # Use the larger of current and previous margin to clear old remnants
-        clear_margin = max(margin, self._prev_margin)
-        self._prev_margin = margin
-        x = int(self._center_x - clear_margin)
-        y = int(self._center_y - clear_margin)
-        self.update(x, y, clear_margin * 2, clear_margin * 2)
+        self.update()
 
     def paintEvent(self, event):
-        """Render the crosshair - minimal draw area."""
+        """Render the crosshair."""
         if not self._visible:
             return
 
         painter = QPainter(self)
-        # Clear the region first — erase any old crosshair pixels
-        painter.setCompositionMode(QPainter.CompositionMode_Clear)
-        painter.fillRect(event.rect(), Qt.transparent)
-        painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
         painter.setRenderHint(QPainter.Antialiasing, True)
 
         anim_config = self.config.data.get("animation", {})
@@ -118,12 +106,17 @@ class OverlayWindow(QWidget):
 
     # ---- Public API ----
 
-    def toggle_visibility(self):
+    def toggle_visibility(self) -> bool:
+        """Toggle overlay on/off. Uses hide()/show() for clean clearing."""
         self._visible = not self._visible
-        self.show() if self._visible else self.hide()
+        if self._visible:
+            self.show()
+            self.raise_()
+        else:
+            self.hide()
         return self._visible
 
-    def toggle_animation(self):
+    def toggle_animation(self) -> bool:
         self._animation_enabled = not self._animation_enabled
         self.config.set("animation.enabled", self._animation_enabled)
         self._update_timer_interval()
@@ -131,15 +124,22 @@ class OverlayWindow(QWidget):
 
     def set_visible(self, visible: bool):
         self._visible = visible
-        self.show() if visible else self.hide()
+        if visible:
+            self.show()
+            self.raise_()
+        else:
+            self.hide()
 
     def refresh_config(self):
         """Reload config and recalculate geometry + timer."""
         self._update_geometry()
         self._animation_enabled = self.config.get("animation.enabled", True)
         self._update_timer_interval()
-        # Force full repaint so old crosshair is completely cleared
-        self.repaint()
+        # Hide and re-show to force clean redraw (clears old pixels completely)
+        if self._visible:
+            self.hide()
+            self.show()
+            self.raise_()
 
     def trigger_recoil(self):
         self.animation.trigger_recoil()
