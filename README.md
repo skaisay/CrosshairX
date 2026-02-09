@@ -36,16 +36,16 @@
 ### Способ 1: Одна команда (клон + установка)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/crosshairx.git
-cd crosshairx
+git clone https://github.com/skaisay/CrosshairX.git
+cd CrosshairX
 install.bat
 ```
 
 ### Способ 2: pip install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/crosshairx.git
-cd crosshairx
+git clone https://github.com/skaisay/CrosshairX.git
+cd CrosshairX
 pip install -e .
 crosshairx
 ```
@@ -53,8 +53,8 @@ crosshairx
 ### Способ 3: Только запуск (без установки)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/crosshairx.git
-cd crosshairx
+git clone https://github.com/skaisay/CrosshairX.git
+cd CrosshairX
 pip install -r requirements.txt
 python -m crosshair_app
 ```
